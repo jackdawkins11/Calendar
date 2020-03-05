@@ -16,8 +16,8 @@ function successfullyCreatedAccount( $username, $password,
     $dsn, $dbusername, $dbpassword){
     if( preg_match( '/[^A-Za-z0-9]/', $username ) ){
         $response->successfullyCreatedAccount=false;
-        $response->message = "Username must consist of only uppercase letters"
-            . ", lowercase letters and numbers.";
+        $response->message = "Username must consist of only uppercase letters,"
+            . " lowercase letters and numbers.";
         return $response;
     }
     if( preg_match( '/[^A-Za-z0-9]/', $password )
@@ -26,8 +26,8 @@ function successfullyCreatedAccount( $username, $password,
         || !preg_match( "#[a-z]+#", $password )
         || !preg_match( "#[A-Z]+#", $password )  ){
         $response->successfullyCreatedAccount=false;
-        $response->message = "Password must consist of uppercase letters"
-            . ", lowercase letters and numbers, and must be more than 8 characters long.";
+        $response->message = "Password must contain uppercase letters,"
+            . " lowercase letters and numbers, and must be more than 8 characters long.";
         return $response;
     }
     try{
