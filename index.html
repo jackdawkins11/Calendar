@@ -1,66 +1,80 @@
 <html>
     <head>
-        <script>
-            function reset(){
-                document.getElementById( "log_in_error_message_wrapper" )
-                    .style.display = 'none';
-                document.getElementById( "sign_up_message_wrapper" )
-                   .style.display = 'none';
-                document.getElementById( "log_in_username_input" ).value = "";
-                document.getElementById( "log_in_password_input" ).value = "";
-                document.getElementById( "sign_up_username_input" ).value = "";
-                document.getElementById( "sign_up_password_input" ).value = "";
-                document.getElementById( "sign_up_confirm_password_input" ).value = "";
-            }
-            function prepareTabs(){
-                var tabs = document.getElementsByClassName( "tab_group" )[0].children;
-                for( var i = 0; i < tabs.length; i++ ){
-                    tabs[ i ].onclick = function(){
-                        var tabs = document.getElementsByClassName( "tab_group" )[0].children;
-                        for( var i = 0; i < tabs.length; i++ ){
-                            if( tabs[ i ].classList.contains( "active_tab" ) ){
-                                tabs[ i ].classList.remove( "active_tab" );
-                                var oldId = tabs[ i ].id;
-                                break;
-                            }
-                        }
-                        this.classList.add( "active_tab" );
-                        var newId = this.id;
-                        document.getElementById( oldId + "_content" ).classList
-                            .remove( "active_tab_content" );
-                        document.getElementById( newId + "_content" ).classList
-                            .add( "active_tab_content" );
-                        if( newId != oldId ){
-                            reset();
-                        }
+    <script>
+        function checkLogin(){
+            var xhr = new XMLHttpRequest();
+            xhr.onreadystatechange = function(){
+                if( this.readyState == 4
+                    && this.status == 200 ){
+                    var response = JSON.parse( this.responseText );
+                    if( response.isLoggedIn ){
+                        document.location.href = "home.html";
                     }
                 }
             }
-            function prepareInputWrappers(){
-                var wrappers = document.getElementsByClassName( "input_wrapper" );
-                for( var i = 0; i < wrappers.length; i++ ){
-                    wrappers[ i ].onclick = function(){
-                        this.children[ 1 ].focus();
+            xhr.open( "POST", "checkLogin.php" );
+            xhr.send();
+        }
+        function reset(){
+            document.getElementById( "log_in_error_message_wrapper" )
+                .style.display = 'none';
+            document.getElementById( "sign_up_message_wrapper" )
+               .style.display = 'none';
+            document.getElementById( "log_in_username_input" ).value = "";
+            document.getElementById( "log_in_password_input" ).value = "";
+            document.getElementById( "sign_up_username_input" ).value = "";
+            document.getElementById( "sign_up_password_input" ).value = "";
+            document.getElementById( "sign_up_confirm_password_input" ).value = "";
+        }
+        function prepareTabs(){
+            var tabs = document.getElementsByClassName( "tab_group" )[0].children;
+            for( var i = 0; i < tabs.length; i++ ){
+                tabs[ i ].onclick = function(){
+                    var tabs = document.getElementsByClassName( "tab_group" )[0].children;
+                    for( var i = 0; i < tabs.length; i++ ){
+                        if( tabs[ i ].classList.contains( "active_tab" ) ){
+                            tabs[ i ].classList.remove( "active_tab" );
+                            var oldId = tabs[ i ].id;
+                            break;
+                        }
+                    }
+                    this.classList.add( "active_tab" );
+                    var newId = this.id;
+                    document.getElementById( oldId + "_content" ).classList
+                        .remove( "active_tab_content" );
+                    document.getElementById( newId + "_content" ).classList
+                        .add( "active_tab_content" );
+                    if( newId != oldId ){
+                        reset();
                     }
                 }
             }
-            function prepareButtons(){
-                document.getElementById( "log_in_button" ).onclick
-                    = function(){
-                        var username = document.getElementById( "log_in_username_input" ).value;
-                        var password = document.getElementById( "log_in_password_input" ).value;
-                        document.getElementById( "log_in_password_input" ).value = "";
-                        if( username === ""
-                            || password === "" ){
-                            document.getElementById( "log_in_error_message_wrapper" )
-                                .style.display = 'block';
-                            document.getElementById( "log_in_error_message" )
-                                .innerHTML = "Please fill out all forms";
-                            document.getElementById( "log_in_error_message" )
-                                .style.color = 'red';
-                            return;
-                        }
-                        var xhr = new XMLHttpRequest();
+        }
+        function prepareInputWrappers(){
+            var wrappers = document.getElementsByClassName( "input_wrapper" );
+            for( var i = 0; i < wrappers.length; i++ ){
+                wrappers[ i ].onclick = function(){
+                    this.children[ 1 ].focus();
+                }
+            }
+        }
+        function prepareButtons(){
+            document.getElementById( "log_in_button" ).onclick
+                = function(){
+                    var username = document.getElementById( "log_in_username_input" ).value;
+                    var password = document.getElementById( "log_in_password_input" ).value;
+                    document.getElementById( "log_in_password_input" ).value = "";
+                    if( username === ""
+                        || password === "" ){
+                        document.getElementById( "log_in_error_message_wrapper" )
+                            .style.display = 'block';
+                        document.getElementById( "log_in_error_message" )
+                            .innerHTML = "Please fill out all forms";
+                        document.getElementById( "log_in_error_message" )
+                            .style.color = 'red';
+                        return;
+                    }
+                    var xhr = new XMLHttpRequest();
                         xhr.onreadystatechange = function(){
                             if( this.readyState === 4
                                 && this.status === 200 ){
@@ -109,138 +123,141 @@
                         }
                         var xhr = new XMLHttpRequest();
                         xhr.onreadystatechange = function(){
-                            if( this.readyState === 4
-                                && this.status === 200 ){
-                                var response = JSON.parse( this.responseText );
-                                document.getElementById( "sign_up_message_wrapper" )
-                                    .style.display = 'block';
+                        if( this.readyState === 4
+                            && this.status === 200 ){
+                            var response = JSON.parse( this.responseText );
+                            document.getElementById( "sign_up_message_wrapper" )
+                                .style.display = 'block';
+                            document.getElementById( "sign_up_message" )
+                                .innerHTML = response.message;
+                            if( response.successfullyCreatedAccount ){
                                 document.getElementById( "sign_up_message" )
-                                    .innerHTML = response.message;
-                                if( response.successfullyCreatedAccount ){
-                                    document.getElementById( "sign_up_message" )
-                                        .style.color = 'green';
-                                    document.getElementById( "sign_up_username_input" ).value = "";
-                                }else{
-                                    document.getElementById( "sign_up_message" )
-                                        .style.color = 'red';
-                                }
-                            }
+                                    .style.color = 'green';
+                                document.getElementById( "sign_up_username_input" ).value = "";
+                            }else{
+                                document.getElementById( "sign_up_message" )
+                                    .style.color = 'red';
+                             }
                         }
-                        xhr.open( "POST", "register.php" );
-                        xhr.setRequestHeader('Content-type', 'application/x-www-form-urlencoded');
-                        xhr.send( "username=" + username
-                            + "&password=" + password );
                     }
-            }
-            window.onload = function(){
-                prepareInputWrappers();
-                prepareTabs();
-                prepareButtons();
-            }
-        </script> 
-        <style type="text/css">
-            body {
-                background: #c1bdba;
-                font-family: 'Titillium Web', sans-serif;
-            }
-            .form {
-                margin: 40px 40px auto;
-                border: 4px;
-                padding: 40px;
-                max-width: 600px;
-                box-shadow: 0 4px 10px 4px #13232f;
-                background: #13232f;
-            }
-            .form_flex {
-                width: 100%;
-                display: flex;
-                flex-direction: column;
-            }
-            .tab_group{
-                width: 100%;
-                display: flex;
-                justify-content: center;
-            }
-            .tab {
-                width: 50%;
-                padding:15px;
-                background: #a0b3b0;
-                text-align: center;
-                color: white;
-                font-size: 20px;
-                cursor: pointer;
-            }
-            .tab:hover {
-                background: #1ab188;
-            }
-            .active_tab {
-                background: #1ab188;
-            }
-            .tab_content{
-                display:none;
-            }
-            .active_tab_content{
-                display: flex;
-                flex-direction: column;
-            }
-            h1 {
-                text-align:center;
-                color: white;
-                font-weight:300;
-            }
-            .input_wrapper{
-                margin: 10px;
-                border: 1px solid #a0b3b0;
-                padding: 10px;
-                display: flex;
-                flex-direction: column;
-            }
-            label {
-                flex: 2;
-                width: 100%;
-                font-size: 15pt;
-                border: none;
-                outline: none;
-            }
-            input {
-                flex: 2;
-                width: 100%;
-                font-size: 15pt;
-                border: none;
-                outline: none;
-            }
-            input, label {
-                background: #13232f;
-                cursor: text;
-                color: white;
-            }
-            .button_wrapper{
-                margin: 10px;
-                border: 1px solid #a0b3b0;
-                background: #13232f;
-            }
-            button {
-                border: none;
-                width: 100%;
-                font-size: 15pt;
-                color: white;
-                background: #a0b3b0;
-            }
-            button:focus{
-                outline: 3px solid #1ab188;
-            }
-            .message_wrapper{
-                display: none;
-                margin: 10px;
-                border: none;
-                padding: 10px;
-                background: #13232f;
-            }
-            .message{
-                color: red;
-                font-size: 13pt;
-            }
-        </style>
+                    xhr.open( "POST", "register.php" );
+                    xhr.setRequestHeader('Content-type', 'application/x-www-form-urlencoded');
+                    xhr.send( "username=" + username
+                        + "&password=" + password );
+                }
+        }
+        window.onload = function(){
+            checkLogin();
+            prepareInputWrappers();
+            prepareTabs();
+            prepareButtons();
+        }
+    </script> 
+    <style type="text/css">
+        body {
+            background: #c1bdba;
+            font-family: 'Titillium Web', sans-serif;
+            display: flex;
+            justify-content: center;
+        }
+        .form {
+            margin: 40px 40px auto;
+            border: 4px;
+            padding: 40px;
+            max-width: 600px;
+            box-shadow: 0 4px 10px 4px #13232f;
+            background: #13232f;
+        }
+        .form_flex {
+            width: 100%;
+            display: flex;
+            flex-direction: column;
+        }
+        .tab_group{
+            width: 100%;
+            display: flex;
+            justify-content: center;
+        }
+        .tab {
+            width: 50%;
+            padding:15px;
+            background: #a0b3b0;
+            text-align: center;
+            color: white;
+            font-size: 20px;
+            cursor: pointer;
+        }
+        .tab:hover {
+            background: #1ab188;
+        }
+        .active_tab {
+            background: #1ab188;
+        }
+        .tab_content{
+            display:none;
+        }
+        .active_tab_content{
+            display: flex;
+            flex-direction: column;
+        }
+        h1 {
+            text-align:center;
+            color: white;
+            font-weight:300;
+        }
+        .input_wrapper{
+            margin: 10px;
+            border: 1px solid #a0b3b0;
+            padding: 10px;
+            display: flex;
+            flex-direction: column;
+        }
+        label {
+            flex: 2;
+            width: 100%;
+            font-size: 15pt;
+            border: none;
+            outline: none;
+        }
+        input {
+            flex: 2;
+            width: 100%;
+            font-size: 15pt;
+            border: none;
+            outline: none;
+       }
+       input, label {
+            background: #13232f;
+            cursor: text;
+            color: white;
+        }
+        .button_wrapper{
+            margin: 10px;
+            border: 1px solid #a0b3b0;
+            background: #13232f;
+        }
+        button {
+            border: none;
+            width: 100%;
+            font-size: 15pt;
+            color: white;
+            background: #a0b3b0;
+        }
+        button:focus{
+            outline: 3px solid #1ab188;
+        }
+        .message_wrapper{
+            display: none;
+            margin: 10px;
+            border: none;
+            padding: 10px;
+            background: #13232f;
+        }
+        .message{
+            color: red;
+            font-size: 13pt;
+        }
+    </style>
     </head>
     <body>
         <div class="form">

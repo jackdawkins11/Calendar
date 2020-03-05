@@ -1,0 +1,27 @@
+
+<html>
+    <head>
+    <script>
+        var username;
+        function checkLogin(){
+            var xhr = new XMLHttpRequest();
+            xhr.onreadystatechange = function(){
+                if( this.readyState == 4
+                    && this.status == 200 ){
+                    var response = JSON.parse( this.responseText );
+                    if( !response.isLoggedIn ){
+                        window.location.href = "index.html";
+                    }
+                }
+            }
+            xhr.open( "POST", "checkLogin.php" );
+            xhr.send();
+        }
+        window.onload = function(){
+            checkLogin();
+        }
+    </script>
+    </head>
+    <body>
+    </body>
+</html>

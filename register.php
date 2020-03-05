@@ -26,7 +26,7 @@ function successfullyCreatedAccount( $username, $password,
         || !preg_match( "#[a-z]+#", $password )
         || !preg_match( "#[A-Z]+#", $password )  ){
         $response->successfullyCreatedAccount=false;
-        $response->message = "Password must contain uppercase letters,"
+        $response->message = "Password must contain and only contain uppercase letters,"
             . " lowercase letters and numbers, and must be more than 8 characters long.";
         return $response;
     }
