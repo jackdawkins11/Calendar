@@ -2,7 +2,60 @@
 <html>
     <head>
     <script>
-        var username;
+        function prepareAutocomplete(  ){
+            document.getElementById( "search_input" ).oninput = function(){
+                clearAutocomplete();
+                var val = this.value;
+                if( !val ){ return; }
+                var xhr = new XMLHttpRequest();
+                xhr.onreadystatechange = function(){
+                    if( this.readyState == 4
+                        && this.status == 200 ){
+                        var response = JSON.parse( this.responseText );
+                        if( 0 < response.matching.length ){
+                            addAutocomplete( response.matching );
+                        }
+                    }
+                }
+                xhr.open( "POST", "autocompleteUsers.php" );
+                xhr.setRequestHeader('Content-type', 'application/x-www-form-urlencoded');
+                xhr.send( "startOfName=" + val );
+            }
+        }
+        function addAutocomplete( arr ){
+            for( var i = 0; i < arr.length; i++ ){
+                var b = document.createElement( "DIV" );
+                b.innerHTML = arr[ i ];
+                b.onclick = function(){
+                    var newResult = document.createElement( "DIV" );
+                    newResult.setAttribute( "class",  "search_result" );
+                    var newResultValue = document.createElement( "DIV" );
+                    newResultValue.setAttribute( "class", "search_result_value" );
+                    newResultValue.innerHTML = this.innerHTML;
+                    var newResultButton = document.createElement( "BUTTON" );
+                    newResultButton.setAttribute( "class", "search_result_close_button" );
+                    newResultButton.innerHTML = "X";
+                    newResultButton.onclick = function(){
+                        event.target.parentElement.parentElement
+                            .removeChild( event.target.parentElement );
+                    }
+                    newResult.appendChild( newResultValue );
+                    newResult.appendChild( newResultButton );
+                    document.getElementById( "search_form" ).appendChild( newResult );
+                    document.getElementById( "search_input" ).value = 
+                        document.getElementById( "search_input" ).defaultValue;
+                    clearAutocomplete();
+                }
+                document.getElementsByClassName("autocomplete_items")[0].appendChild( b );
+            }
+        }
+        function clearAutocomplete(){
+            var node = document.getElementsByClassName("autocomplete_items")[0];
+            while( node.hasChildNodes() ){
+                node.removeChild( node.firstChild );
+            }
+        }
+        var monthDisplay;
         function checkLogin(){
             var xhr = new XMLHttpRequest();
             xhr.onreadystatechange = function(){
@@ -17,11 +70,801 @@
             xhr.open( "POST", "checkLogin.php" );
             xhr.send();
         }
+        function prepareButtons(){
+            document.getElementById( "log_out_button" ).onclick = function(){
+                var xhr = new XMLHttpRequest();
+                xhr.open( "POST", "logout.php" );
+                xhr.send();
+                window.location.href = "index.html";
+            };
+            document.getElementById( "calendar_left_button" )
+                .onclick = function(){
+                monthDisplay.previousMonth();
+                displayCalendarIcon();
+            };
+            document.getElementById( "calendar_right_button" )
+                .onclick = function(){
+                monthDisplay.nextMonth();
+                displayCalendarIcon();
+            };
+            document.getElementById( "calendar_wrapper" )
+                .onclick = function( event ){
+                var boundingRect = this.getBoundingClientRect();
+                var x = event.clientX - boundingRect.left;
+                var y = event.clientY - boundingRect.top;
+                var sqX = Math.floor( x / 30 );
+                var sqY = Math.floor( y / 30 );
+                if( 2 <= sqY ){
+                    sqY -= 2;
+                    monthDisplay.setSelectedDate( sqY * 7 + sqX );
+                    displayCalendarIcon();
+                    displaySchedule();
+                }
+            };
+        }
+        class MonthDisplay {
+            constructor(){
+                this.displayedMonth = new Date();
+                this.selectedDate = new Date();
+            }
+            nextMonth(){
+                this.displayedMonth.setMonth( this.displayedMonth.getMonth() + 1 );
+            }
+            previousMonth(){
+                this.displayedMonth.setMonth( this.displayedMonth.getMonth() - 1 );
+            }
+            getSelectedDateIdx(){
+                var dayNumbers = this.getMonthDayNumbers();
+                var i = 0;
+                while( ! ( dayNumbers[ i ][ 0 ] == this.selectedDate.getDate()
+                    && dayNumbers[ i ][ 1 ] ) ){
+                    i += 1;
+                }
+                return i;
+            }
+            setSelectedDate( sq ){
+                var prevSq = this.getSelectedDateIdx();
+                this.selectedDate.setDate( this.selectedDate.getDate() + ( sq - prevSq ) );
+                if( !this.showSelectedDate() ){
+                    if( sq - prevSq < 0 ){
+                        this.previousMonth();
+                    }else{
+                        this.nextMonth();
+                    }
+                }
+            }
+            showSelectedDate(){
+                return this.displayedMonth.getMonth()
+                    == this.selectedDate.getMonth()
+                    && this.displayedMonth.getYear()
+                    == this.selectedDate.getYear();
+            }
+            getLabel(){
+                var label = "";
+                if( this.displayedMonth.getMonth() == 0 ){
+                    label += "January";
+                }else if( this.displayedMonth.getMonth() == 1 ){
+                    label += "February";
+                }else if( this.displayedMonth.getMonth() == 2 ){
+                    label += "March";
+                }else if( this.displayedMonth.getMonth() == 3 ){
+                    label += "April";
+                }else if( this.displayedMonth.getMonth() == 4 ){
+                    label += "May";
+                }else if( this.displayedMonth.getMonth() == 5 ){
+                    label += "June";
+                }else if( this.displayedMonth.getMonth() == 6 ){
+                    label += "July";
+                }else if( this.displayedMonth.getMonth() == 7 ){
+                    label += "August";
+                }else if( this.displayedMonth.getMonth() == 8 ){
+                    label += "September";
+                }else if( this.displayedMonth.getMonth() == 9 ){
+                    label += "October";
+                }else if( this.displayedMonth.getMonth() == 10 ){
+                    label += "November";
+                }else if( this.displayedMonth.getMonth() == 11 ){
+                    label += "December";
+                }
+                return label + " " + this.displayedMonth.getFullYear();
+            }
+            getMonthDayNumbers(){
+                var day = new Date( this.displayedMonth.toDateString() );
+                day.setDate( 1 );
+                while( day.getDay() != 0 ){
+                    day.setDate( day.getDate() - 1 );
+                }
+                var dayNumbers = [];
+                var inCurrent = false;
+                for( var i = 0; i < 6 * 7; i += 1 ){
+                    if( day.getDate() == 1 ){
+                        if( inCurrent ){
+                            inCurrent = false;
+                        }else{
+                            inCurrent = true;
+                        }
+                    }
+                    dayNumbers.push( [ day.getDate(), inCurrent ] );
+                    day.setDate( day.getDate() + 1 );
+                }
+                return dayNumbers;
+            }
+            getWeekDayNumbers(){
+                var day = new Date( this.selectedDate.toDateString() );
+                day.setDate( day.getDate() -day.getDay() );
+                var dayNumbers = [];
+                for( var i = 0; i < 7; i++ ){
+                    dayNumbers.push( day.getDate() );
+                    day.setDate( day.getDate() + 1 );
+                }
+                return dayNumbers;
+            }
+        }
+        function displayCalendarIcon(){
+            document.getElementById( "calendar_date" )
+                .innerHTML = monthDisplay.getLabel();
+            var dayNumbers = monthDisplay.getMonthDayNumbers();
+            var selectedDateIdx = monthDisplay.getSelectedDateIdx();
+            var row = document.getElementById( "calendar_wrapper" )
+                .children[ 2 ];
+            for( var i = 0; i < 6; i++ ){
+                var square = row.children[ 0 ];
+                for( var r = 0; r < 7; r++ ){
+                    square.innerHTML = dayNumbers[ i * 7 + r ][ 0 ];
+                    if( dayNumbers[ i * 7 + r ][ 1 ] ){
+                        square.style.color = 'rgba( 40%, 40%, 40%, 100% )';
+                    }else{
+                        square.style.color = 'rgba( 60%, 60%, 60%, 100% )';
+                    }
+                    if( monthDisplay.showSelectedDate()
+                        && i * 7 + r == selectedDateIdx ){
+                        square.style.borderRadius = "50%";
+                        square.style.background = "#1a73e8";
+                        square.style.color = "white";
+                    }else{
+                        square.style.borderRadius = "none";
+                        square.style.background = "white";
+                    }
+                    square = square.nextElementSibling;
+                }
+                row = row.nextElementSibling;
+            }
+        }
+        function displaySchedule(){
+            var dayNumbers = monthDisplay.getWeekDayNumbers();
+            var column = document.getElementById( "schedule_wrapper" ).children[ 1 ];
+            for( i = 0; i < 7; i++ ){
+                column.children[ 0 ].children[ 1 ].innerHTML = dayNumbers[ i ];
+                column = column.nextElementSibling;
+            }
+        }
         window.onload = function(){
             checkLogin();
+            prepareButtons();
+            prepareAutocomplete();
+            monthDisplay = new MonthDisplay();
+            displayCalendarIcon();
         }
     </script>
+    <style>
+        ::-webkit-scrollbar {
+            width: 10px;
+        }
+        ::-webkit-scrollbar-track {
+            background: #f1f1f1;
+        }
+        ::-webkit-scrollbar-thumb {
+            background: #888;
+            border-radius: 10px;
+        }
+        ::-webkit-scrollbar-thumb:hover {
+            background: #555;
+            border-radius: 10px;
+        }
+        * {
+            box-sizing: border-box;
+            font-family: sans-serif;
+        }
+        button:focus{
+            outline:none;
+        }
+        #screen{
+            position: fixed;
+            top:0;bottom:0;left:0;right:0;
+            width:100%;height:100%;
+            display:flex;flex-direction:column;
+        }
+        /* header */
+        #header{
+            display: flex; flex-direction: row;
+            justify-content: flex-end;
+            align-items: center;
+            height:6%;
+        }
+        #log_out_button{
+            border-radius:5px;
+            font-size:15pt;
+            padding:7px;
+            margin-right: 20px;
+            background:white;
+            border:none;
+            color: rgba(30%,30%,30%,100%);
+            box-shadow: 0 3px 5px -1px rgba(0,0,0,2);
+        }
+        /* main_container */
+        #main_container{
+            display:flex; flex-direction:row;
+            height:94%;
+        }
+        #left_panel{
+            display:flex;flex-direction:column;
+            min-width:280px;
+        }
+        #new_event{
+            display:flex;
+            align-items:center;
+        }
+        #new_event_button{
+            margin-left:10px;
+            border-radius: 20px;
+            background: white;
+            border:none;
+            box-shadow: 0 3px 5px -1px rgba(0,0,0,2);
+            color: rgba(30%,30%,30%,100%);
+            font-size:15pt;
+            display:flex;justify-content:center;
+            align-items:center;
+        }
+        #bigfont {
+            font-size:30pt;
+            margin-left: 10px;
+        }
+        #normalfont {
+            margin-left: 10px;
+            margin-right: 10px;
+            font-size:13pt;
+        }
+        #calendar{
+            padding:10px;
+            display:flex;justify-content:center;
+            align-items:center;
+        }
+        #calendar_wrapper{
+            display:flex; flex-direction: column;
+        }
+        #calendar_top_row{
+            height:30px;
+            display: flex; flex-direction:row;
+            color: rgba(20%,20%,20%,100%);
+        }
+        .calendar_row{
+            display: flex; flex-direction:row;
+            height:30px;
+            color: rgba(50%,50%,50%,100%);
+        }
+        #calendar_date{
+            width:50%;
+            text-align:center;
+        }
+        #calendar_buttons{
+            display:flex;justify-content:flex-end;
+            width:50%;
+        }
+        #calendar_right_button,
+        #calendar_left_button {
+            background:none;
+            border:none;
+            font-size: 13pt;
+        }
+        .calendar_square{
+            width:30px;
+            font-size:10pt;
+            display:flex; justify-content:center;
+            align-items:center;
+        }
+        .calendar_square:hover{
+            border: 1px solid grey;
+        }
+        #search{
+            display:flex;justify-content:center;
+            align-items:center;
+            flex-direction:column;
+        }
+        #search_heading{
+            width:200px;
+            padding:5px;
+        }
+        #search_form{
+            width:200px;
+            margin-top:5px;
+            display:flex;justify-content:center;
+            flex-direction:column;
+            align-items:flex-start;
+            background: rgba(90%,90%,90%,100%);
+            padding:5px;
+        }
+        .autocomplete {
+            position:relative;
+            display:inline-block;
+        }
+        #search_input{
+            width:100%;
+            background: rgba(90%,90%,90%,100%);
+            border:none;
+            font-size:14pt;
+        }
+        .autocomplete_items{
+            position:absolute;
+            z-index:99;
+            width: 220px;
+            height: 0;
+        }
+        .autocomplete_items>div{
+            padding: 10px;
+            cursor:pointer;
+            background:#fff;
+            border: 1px solid #d4d4d4;
+        }
+        .autocomplete_items>div:hover {
+            background-color: #e9e9e9;
+        }
+        .autocomplete_active{
+            background-color: DodgerBlue !important;
+            color: #ffffff;
+        }
+        .search_result{
+            display:flex;
+            border: 2px solid orange;
+            border-radius: 25px;
+            margin: 5px;
+            padding:5px;
+            align-items: center;
+            margin-bottom:5px;
+        }
+        .search_result_value{
+            font-size: 12pt;
+        }
+        .search_result_close_button{
+            margin-left:5px;
+            background:white;
+            border-radius:50%;
+            border:none;
+            font-size:12pt;
+        }
+        #filter{
+            display:flex;
+            flex-direction:column;
+            align-items: center;
+        }
+        #filter_header{
+            width: 200px;
+            padding:5px;
+        }
+        #filter_form{
+            width: 200px;
+            padding:5px;
+            display:flex;
+            flex-direction:column;
+        }
+        .filter_item{
+            display:flex;
+            padding: 5px;
+        }
+        .filter_checkbox{
+            background: green;
+            color: white;
+            border:none;
+            border-radius: 3px;
+        }
+        .filter_name{
+            margin-left:15px;
+            font-size:12pt;
+        }
+        #right_panel{
+            width:100%;
+        }
+        #schedule_wrapper{
+            width:100%;
+            height:100%;
+            display:flex;flex-direction:row;
+            overflow-y:scroll;
+            overflow-x:hidden;
+        }
+        .schedule_label_column{
+            display:flex;flex-direction:column;
+            min-height: 1600px;
+            min-width: 60px;
+        }
+        .schedule_column{
+            display:flex;flex-direction:column;
+            min-height: 1600px;
+            width:100%;
+        }
+        .schedule_slot_top{
+            height:64px;
+            display: flex; justify-content: center;
+            align-items: center; flex-direction:column;
+            border: none;
+        }
+        .schedule_slot{
+            height:64px;
+            border-color:rgba( 80%, 80%, 80%, 1 );
+            border-style: solid;
+            border-width: 1px;
+            border-top:none;
+            border-left:none;
+            display:flex;
+        }
+        .schedule_slot_label{
+            height:64px;
+            display: flex; justify-content: flex-end;
+            align-items: center;
+            border: none;
+            margin-right: 10px;
+            font-size:10pt;
+        }
+        .schedule_slot_space_filler{
+            height:32px;
+            border: none;
+        }
+    </style>
     </head>
     <body>
+        <div id="screen">
+            <div id="header">
+                <button id="log_out_button">Log Out</button>
+            </div>
+            <div id="main_container">
+                <div id="left_panel">
+                    <div id="new_event" >
+                        <button id="new_event_button">
+                            <div id="bigfont">+</div><div id="normalfont">New</div>
+                        </button>
+                    </div>
+                    <div id="calendar" >
+                        <div id="calendar_wrapper">
+                            <div id="calendar_top_row">
+                                <div id="calendar_date"></div>
+                                <div id="calendar_buttons">
+                                    <button id="calendar_left_button">&lt</button>
+                                    <button id="calendar_right_button">&gt</button>
+                                </div>
+                            </div>
+                            <div class="calendar_row">
+                                <div class="calendar_square">S</div>
+                                <div class="calendar_square">M</div>
+                                <div class="calendar_square">T</div>
+                                <div class="calendar_square">W</div>
+                                <div class="calendar_square">T</div>
+                                <div class="calendar_square">F</div>
+                                <div class="calendar_square">S</div>
+                            </div>
+                            <div class="calendar_row">
+                                <div class="calendar_square"></div>
+                                <div class="calendar_square"></div>
+                                <div class="calendar_square"></div>
+                                <div class="calendar_square"></div>
+                                <div class="calendar_square"></div>
+                                <div class="calendar_square"></div>
+                                <div class="calendar_square"></div>
+                            </div>
+                            <div class="calendar_row">
+                                <div class="calendar_square"></div>
+                                <div class="calendar_square"></div>
+                                <div class="calendar_square"></div>
+                                <div class="calendar_square"></div>
+                                <div class="calendar_square"></div>
+                                <div class="calendar_square"></div>
+                                <div class="calendar_square"></div>
+                            </div>
+                            <div class="calendar_row">
+                                <div class="calendar_square"></div>
+                                <div class="calendar_square"></div>
+                                <div class="calendar_square"></div>
+                                <div class="calendar_square"></div>
+                                <div class="calendar_square"></div>
+                                <div class="calendar_square"></div>
+                                <div class="calendar_square"></div>
+                            </div>
+                            <div class="calendar_row">
+                                <div class="calendar_square"></div>
+                                <div class="calendar_square"></div>
+                                <div class="calendar_square"></div>
+                                <div class="calendar_square"></div>
+                                <div class="calendar_square"></div>
+                                <div class="calendar_square"></div>
+                                <div class="calendar_square"></div>
+                            </div>
+                            <div class="calendar_row">
+                                <div class="calendar_square"></div>
+                                <div class="calendar_square"></div>
+                                <div class="calendar_square"></div>
+                                <div class="calendar_square"></div>
+                                <div class="calendar_square"></div>
+                                <div class="calendar_square"></div>
+                                <div class="calendar_square"></div>
+                            </div>
+                            <div class="calendar_row">
+                                <div class="calendar_square"></div>
+                                <div class="calendar_square"></div>
+                                <div class="calendar_square"></div>
+                                <div class="calendar_square"></div>
+                                <div class="calendar_square"></div>
+                                <div class="calendar_square"></div>
+                                <div class="calendar_square"></div>
+                            </div>
+                        </div>
+                    </div>
+                    <div id="search" >
+                        <div id="search_heading">Meet with...</div>
+                        <div id="search_form" >
+                            <div class="autocomplete">
+                                <input type="text" id="search_input" placeholder="Search for people"/>
+                                <div class="autocomplete_items"></div>
+                            </div>
+                        </div>
+                    </div>
+                    <div id="filter" >
+                        <div id="filter_header">Filters</div>
+                        <div id="filter_form" >
+                            <div class="filter_item">
+                                <button class="filter_checkbox">X</button>
+                                <div class="filter_name">Work</div>
+                            </div>
+                            <div class="filter_item">
+                                <button class="filter_checkbox">X</button>
+                                <div class="filter_name">Social</div>
+                            </div>
+                            <div class="filter_item">
+                                <button class="filter_checkbox">X</button>
+                                <div class="filter_name">Sports</div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                <div id="right_panel">
+                    <div id="schedule_wrapper">
+                        <div class="schedule_label_column">
+                            <div class="schedule_slot_space_filler"></div>
+                            <div class="schedule_slot_label"></div>
+                            <div class="schedule_slot_label">1 AM</div>
+                            <div class="schedule_slot_label">2 AM</div>
+                            <div class="schedule_slot_label">3 AM</div>
+                            <div class="schedule_slot_label">4 AM</div>
+                            <div class="schedule_slot_label">5 AM</div>
+                            <div class="schedule_slot_label">6 AM</div>
+                            <div class="schedule_slot_label">7 AM</div>
+                            <div class="schedule_slot_label">8 AM</div>
+                            <div class="schedule_slot_label">9 AM</div>
+                            <div class="schedule_slot_label">10 AM</div>
+                            <div class="schedule_slot_label">11 AM</div>
+                            <div class="schedule_slot_label">12 AM</div>
+                            <div class="schedule_slot_label">1 PM</div>
+                            <div class="schedule_slot_label">2 PM</div>
+                            <div class="schedule_slot_label">3 PM</div>
+                            <div class="schedule_slot_label">4 PM</div>
+                            <div class="schedule_slot_label">5 PM</div>
+                            <div class="schedule_slot_label">6 PM</div>
+                            <div class="schedule_slot_label">7 PM</div>
+                            <div class="schedule_slot_label">8 PM</div>
+                            <div class="schedule_slot_label">9 PM</div>
+                            <div class="schedule_slot_label">10 PM</div>
+                            <div class="schedule_slot_label">11 PM</div>
+                            <div class="schedule_slot_space_filler"></div>
+                        </div> 
+                        <div class="schedule_column">
+                            <div class="schedule_slot_top">
+                                <div class="schedule_slot_top_day">SUN</div>
+                                <div class="schedule_slot_top_date">1</div>
+                            </div>
+                            <div class="schedule_slot"></div>
+                            <div class="schedule_slot"></div>
+                            <div class="schedule_slot"></div>
+                            <div class="schedule_slot"></div>
+                            <div class="schedule_slot"></div>
+                            <div class="schedule_slot"></div>
+                            <div class="schedule_slot"></div>
+                            <div class="schedule_slot"></div>
+                            <div class="schedule_slot"></div>
+                            <div class="schedule_slot"></div>
+                            <div class="schedule_slot"></div>
+                            <div class="schedule_slot"></div>
+                            <div class="schedule_slot"></div>
+                            <div class="schedule_slot"></div>
+                            <div class="schedule_slot"></div>
+                            <div class="schedule_slot"></div>
+                            <div class="schedule_slot"></div>
+                            <div class="schedule_slot"></div>
+                            <div class="schedule_slot"></div>
+                            <div class="schedule_slot"></div>
+                            <div class="schedule_slot"></div>
+                            <div class="schedule_slot"></div>
+                            <div class="schedule_slot"></div>
+                            <div class="schedule_slot"></div>
+                        </div>
+                        <div class="schedule_column">
+                            <div class="schedule_slot_top">
+                                <div class="schedule_slot_top_day">MON</div>
+                                <div class="schedule_slot_top_date">2</div>
+                            </div>
+                            <div class="schedule_slot"></div>
+                            <div class="schedule_slot"></div>
+                            <div class="schedule_slot"></div>
+                            <div class="schedule_slot"></div>
+                            <div class="schedule_slot"></div>
+                            <div class="schedule_slot"></div>
+                            <div class="schedule_slot"></div>
+                            <div class="schedule_slot"></div>
+                            <div class="schedule_slot"></div>
+                            <div class="schedule_slot"></div>
+                            <div class="schedule_slot"></div>
+                            <div class="schedule_slot"></div>
+                            <div class="schedule_slot"></div>
+                            <div class="schedule_slot"></div>
+                            <div class="schedule_slot"></div>
+                            <div class="schedule_slot"></div>
+                            <div class="schedule_slot"></div>
+                            <div class="schedule_slot"></div>
+                            <div class="schedule_slot"></div>
+                            <div class="schedule_slot"></div>
+                            <div class="schedule_slot"></div>
+                            <div class="schedule_slot"></div>
+                            <div class="schedule_slot"></div>
+                            <div class="schedule_slot"></div>
+                        </div>
+                        <div class="schedule_column">
+                            <div class="schedule_slot_top">
+                                <div class="schedule_slot_top_day">TUE</div>
+                                <div class="schedule_slot_top_date">3</div>
+                            </div>
+                            <div class="schedule_slot"></div>
+                            <div class="schedule_slot"></div>
+                            <div class="schedule_slot"></div>
+                            <div class="schedule_slot"></div>
+                            <div class="schedule_slot"></div>
+                            <div class="schedule_slot"></div>
+                            <div class="schedule_slot"></div>
+                            <div class="schedule_slot"></div>
+                            <div class="schedule_slot"></div>
+                            <div class="schedule_slot"></div>
+                            <div class="schedule_slot"></div>
+                            <div class="schedule_slot"></div>
+                            <div class="schedule_slot"></div>
+                            <div class="schedule_slot"></div>
+                            <div class="schedule_slot"></div>
+                            <div class="schedule_slot"></div>
+                            <div class="schedule_slot"></div>
+                            <div class="schedule_slot"></div>
+                            <div class="schedule_slot"></div>
+                            <div class="schedule_slot"></div>
+                            <div class="schedule_slot"></div>
+                            <div class="schedule_slot"></div>
+                            <div class="schedule_slot"></div>
+                            <div class="schedule_slot"></div>
+                        </div> 
+                        <div class="schedule_column">
+                            <div class="schedule_slot_top">
+                                <div class="schedule_slot_top_day">WED</div>
+                                <div class="schedule_slot_top_date">4</div>
+                            </div>
+                            <div class="schedule_slot"></div>
+                            <div class="schedule_slot"></div>
+                            <div class="schedule_slot"></div>
+                            <div class="schedule_slot"></div>
+                            <div class="schedule_slot"></div>
+                            <div class="schedule_slot"></div>
+                            <div class="schedule_slot"></div>
+                            <div class="schedule_slot"></div>
+                            <div class="schedule_slot"></div>
+                            <div class="schedule_slot"></div>
+                            <div class="schedule_slot"></div>
+                            <div class="schedule_slot"></div>
+                            <div class="schedule_slot"></div>
+                            <div class="schedule_slot"></div>
+                            <div class="schedule_slot"></div>
+                            <div class="schedule_slot"></div>
+                            <div class="schedule_slot"></div>
+                            <div class="schedule_slot"></div>
+                            <div class="schedule_slot"></div>
+                            <div class="schedule_slot"></div>
+                            <div class="schedule_slot"></div>
+                            <div class="schedule_slot"></div>
+                            <div class="schedule_slot"></div>
+                            <div class="schedule_slot"></div>
+                        </div> 
+                        <div class="schedule_column">
+                            <div class="schedule_slot_top">
+                                <div class="schedule_slot_top_day">THU</div>
+                                <div class="schedule_slot_top_date">5</div>
+                            </div>
+                            <div class="schedule_slot"></div>
+                            <div class="schedule_slot"></div>
+                            <div class="schedule_slot"></div>
+                            <div class="schedule_slot"></div>
+                            <div class="schedule_slot"></div>
+                            <div class="schedule_slot"></div>
+                            <div class="schedule_slot"></div>
+                            <div class="schedule_slot"></div>
+                            <div class="schedule_slot"></div>
+                            <div class="schedule_slot"></div>
+                            <div class="schedule_slot"></div>
+                            <div class="schedule_slot"></div>
+                            <div class="schedule_slot"></div>
+                            <div class="schedule_slot"></div>
+                            <div class="schedule_slot"></div>
+                            <div class="schedule_slot"></div>
+                            <div class="schedule_slot"></div>
+                            <div class="schedule_slot"></div>
+                            <div class="schedule_slot"></div>
+                            <div class="schedule_slot"></div>
+                            <div class="schedule_slot"></div>
+                            <div class="schedule_slot"></div>
+                            <div class="schedule_slot"></div>
+                            <div class="schedule_slot"></div>
+                        </div>
+                        <div class="schedule_column">
+                            <div class="schedule_slot_top">
+                                <div class="schedule_slot_top_day">FRI</div>
+                                <div class="schedule_slot_top_date">6</div>
+                            </div>
+                            <div class="schedule_slot"></div>
+                            <div class="schedule_slot"></div>
+                            <div class="schedule_slot"></div>
+                            <div class="schedule_slot"></div>
+                            <div class="schedule_slot"></div>
+                            <div class="schedule_slot"></div>
+                            <div class="schedule_slot"></div>
+                            <div class="schedule_slot"></div>
+                            <div class="schedule_slot"></div>
+                            <div class="schedule_slot"></div>
+                            <div class="schedule_slot"></div>
+                            <div class="schedule_slot"></div>
+                            <div class="schedule_slot"></div>
+                            <div class="schedule_slot"></div>
+                            <div class="schedule_slot"></div>
+                            <div class="schedule_slot"></div>
+                            <div class="schedule_slot"></div>
+                            <div class="schedule_slot"></div>
+                            <div class="schedule_slot"></div>
+                            <div class="schedule_slot"></div>
+                            <div class="schedule_slot"></div>
+                            <div class="schedule_slot"></div>
+                            <div class="schedule_slot"></div>
+                            <div class="schedule_slot"></div>
+                        </div>
+                        <div class="schedule_column">
+                            <div class="schedule_slot_top">
+                                <div class="schedule_slot_top_day">SAT</div>
+                                <div class="schedule_slot_top_date">7</div>
+                            </div>
+                            <div class="schedule_slot"></div>
+                            <div class="schedule_slot"></div>
+                            <div class="schedule_slot"></div>
+                            <div class="schedule_slot"></div>
+                            <div class="schedule_slot"></div>
+                            <div class="schedule_slot"></div>
+                            <div class="schedule_slot"></div>
+                            <div class="schedule_slot"></div>
+                            <div class="schedule_slot"></div>
+                            <div class="schedule_slot"></div>
+                            <div class="schedule_slot"></div>
+                            <div class="schedule_slot"></div>
+                            <div class="schedule_slot"></div>
+                            <div class="schedule_slot"></div>
+                            <div class="schedule_slot"></div>
+                            <div class="schedule_slot"></div>
+                            <div class="schedule_slot"></div>
+                            <div class="schedule_slot"></div>
+                            <div class="schedule_slot"></div>
+                            <div class="schedule_slot"></div>
+                            <div class="schedule_slot"></div>
+                            <div class="schedule_slot"></div>
+                            <div class="schedule_slot"></div>
+                            <div class="schedule_slot"></div>
+                        </div> 
+                    </div>
+                </div>
+            </div>
+        </div>
     </body>
 </html>
