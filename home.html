@@ -2,43 +2,152 @@
 <html>
     <head>
     <script>
-        function prepareAutocomplete(  ){
+        var colors = [ "dodgerblue", "orange", "#996633", "#999966",
+            "#669900", "#99ff66", "#3399ff", "#9933ff", "#ff3399", "#ff0000" ];
+        var colorIdx = 0;
+        var username;
+        var loadedUserData = [];
+        function loadUserData( name, color ){
+            var userData = {};
+            userData.username = name;
+            userData.color = color;
+            userData.events = [];
+            if( name == 'jack' ){
+                var newEvent = {};
+                newEvent.startTime = new Date();
+                newEvent.endTime = new Date();
+                newEvent.endTime.setHours( newEvent.endTime.getHours() + 3 );
+                userData.events.push( newEvent );
+            }
+            if( name == 'jack1' ){
+                var newEvent = {};
+                newEvent.startTime = new Date();
+                newEvent.endTime = new Date();
+                newEvent.endTime.setHours( newEvent.endTime.getHours() + 5 );
+                userData.events.push( newEvent );
+                var newEvent2 = {};
+                newEvent2.startTime = new Date();
+                newEvent2.startTime.setHours( newEvent2.startTime.getHours() + 2 );
+                newEvent2.endTime = new Date();
+                newEvent2.endTime.setHours( newEvent2.endTime.getHours() + 5 );
+                userData.events.push( newEvent2 );
+            }
+            if( name == 'hello' ){
+                var newEvent = {};
+                newEvent.startTime = new Date();
+                newEvent.endTime = new Date();
+                newEvent.endTime.setHours( newEvent.endTime.getHours() + 5 );
+                userData.events.push( newEvent );
+                var newEvent2 = {};
+                newEvent2.startTime = new Date();
+                newEvent2.startTime.setHours( newEvent2.startTime.getHours() + 3 );
+                newEvent2.endTime = new Date();
+                newEvent2.endTime.setHours( newEvent2.endTime.getHours() + 5 );
+                userData.events.push( newEvent2 );
+            }
+            loadedUserData.push( userData );
+            displaySchedule();
+        }
+        function forgetUserData( name ){
+            for( var i = 0; i < loadedUserData.length; i++ ){
+                if( loadedUserData[ i ].username == name ){
+                    loadedUserData.splice( i, 1 );
+                    colorIdx --;
+                    break;
+                }
+            }
+            displaySchedule();
+        }
+        var currentFocus = 0;
+        function addActive( items ){
+            if( items.length == 0 ){
+                currentFocus = 0;
+                return;
+            }
+            for( var i = 0; i < items.length; i++ ){
+                items[ i ].classList.remove( "autocomplete_active" );
+            }
+            if( items.length <= currentFocus ){
+                currentFocus = 0;
+            }
+            if( currentFocus < 0 ){
+                currentFocus = items.length -1;
+            }
+            items[ currentFocus ].classList.add( "autocomplete_active" );
+        }
+        function prepareAutocomplete(){
             document.getElementById( "search_input" ).oninput = function(){
-                clearAutocomplete();
                 var val = this.value;
-                if( !val ){ return; }
+                if( !val ){
+                    clearAutocomplete();
+                    return;
+                }
                 var xhr = new XMLHttpRequest();
                 xhr.onreadystatechange = function(){
                     if( this.readyState == 4
                         && this.status == 200 ){
                         var response = JSON.parse( this.responseText );
-                        if( 0 < response.matching.length ){
-                            addAutocomplete( response.matching );
-                        }
+                        addAutocomplete( response.matching );
                     }
                 }
                 xhr.open( "POST", "autocompleteUsers.php" );
                 xhr.setRequestHeader('Content-type', 'application/x-www-form-urlencoded');
                 xhr.send( "startOfName=" + val );
-            }
+            };
+            document.getElementById( "search_input" ).onkeydown = function(e){
+                var items = document.getElementsByClassName( "autocomplete_items" )[ 0 ]
+                    .getElementsByTagName( "div" );
+                if( e.keyCode == 40 ){
+                    e.preventDefault();
+                    currentFocus++;
+                    addActive( items );
+                }else if( e.keyCode == 38 ){
+                    e.preventDefault();
+                    currentFocus--;
+                    addActive( items );
+                }else if( e.keyCode == 13 ){
+                    e.preventDefault();
+                    if( 0 <= currentFocus && currentFocus < items.length ){
+                        items[ currentFocus ].click();
+                    }
+                }
+            };
         }
         function addAutocomplete( arr ){
+            clearAutocomplete();
+            var addedAtLeastOne = false;
             for( var i = 0; i < arr.length; i++ ){
+                var alreadyLoaded = false;
+                for( var r = 0; r < loadedUserData.length; r++ ){
+                    if( loadedUserData[ r ].username == arr[ i ] ){
+                        alreadyLoaded = true;
+                        break;
+                    }
+                }
+                if( alreadyLoaded ){
+                    continue;
+                }
+                addedAtLeastOne = true;
                 var b = document.createElement( "DIV" );
                 b.innerHTML = arr[ i ];
                 b.onclick = function(){
+                    var color = colors[ colorIdx ];
+                    colorIdx++;
                     var newResult = document.createElement( "DIV" );
                     newResult.setAttribute( "class",  "search_result" );
+                    newResult.style.border = "2px solid " + color;
                     var newResultValue = document.createElement( "DIV" );
                     newResultValue.setAttribute( "class", "search_result_value" );
-                    newResultValue.innerHTML = this.innerHTML;
+                    var name = this.innerHTML;
+                    newResultValue.innerHTML = name;
+                    loadUserData( name, color );
                     var newResultButton = document.createElement( "BUTTON" );
                     newResultButton.setAttribute( "class", "search_result_close_button" );
                     newResultButton.innerHTML = "X";
                     newResultButton.onclick = function(){
-                        event.target.parentElement.parentElement
-                            .removeChild( event.target.parentElement );
-                    }
+                        forgetUserData( event.target.previousElementSibling.innerHTML );
+                        event.target.parentElement.remove();
+                    };
                     newResult.appendChild( newResultValue );
                     newResult.appendChild( newResultButton );
                     document.getElementById( "search_form" ).appendChild( newResult );
@@ -48,8 +157,13 @@
                 }
                 document.getElementsByClassName("autocomplete_items")[0].appendChild( b );
             }
+            if( addedAtLeastOne ){
+                addActive( document.getElementsByClassName( "autocomplete_items" )[ 0 ]
+                    .getElementsByTagName( "div" ) );
+            }
         }
         function clearAutocomplete(){
+            currentFocus = 0;
             var node = document.getElementsByClassName("autocomplete_items")[0];
             while( node.hasChildNodes() ){
                 node.removeChild( node.firstChild );
@@ -64,6 +178,10 @@
                     var response = JSON.parse( this.responseText );
                     if( !response.isLoggedIn ){
                         window.location.href = "index.html";
+                    }else{
+                        username = response.username;
+                        loadUserData( username, colors[ colorIdx ] );
+                        colorIdx++;
                     }
                 }
             }
@@ -123,15 +241,14 @@
                 return i;
             }
             setSelectedDate( sq ){
-                var prevSq = this.getSelectedDateIdx();
-                this.selectedDate.setDate( this.selectedDate.getDate() + ( sq - prevSq ) );
-                if( !this.showSelectedDate() ){
-                    if( sq - prevSq < 0 ){
-                        this.previousMonth();
-                    }else{
-                        this.nextMonth();
-                    }
+                var firstOfMonth = new Date( this.displayedMonth.toDateString() );
+                firstOfMonth.setDate( 1 );
+                while( firstOfMonth.getDay() != 0 ){
+                    firstOfMonth.setDate( firstOfMonth.getDate() - 1 );
                 }
+                firstOfMonth.setDate( firstOfMonth.getDate() + sq );
+                this.selectedDate = new Date( firstOfMonth.toDateString() );
+                this.displayedMonth = new Date( firstOfMonth.toDateString() );
             }
             showSelectedDate(){
                 return this.displayedMonth.getMonth()
@@ -189,12 +306,12 @@
                 }
                 return dayNumbers;
             }
-            getWeekDayNumbers(){
+            getWeekDays(){
                 var day = new Date( this.selectedDate.toDateString() );
                 day.setDate( day.getDate() -day.getDay() );
                 var dayNumbers = [];
                 for( var i = 0; i < 7; i++ ){
-                    dayNumbers.push( day.getDate() );
+                    dayNumbers.push( new Date( day.toDateString() ) );
                     day.setDate( day.getDate() + 1 );
                 }
                 return dayNumbers;
@@ -230,11 +347,49 @@
                 row = row.nextElementSibling;
             }
         }
+        function sameDay( time1, time2 ){
+            return time1.getDate() == time2.getDate()
+                && time1.getMonth() == time2.getMonth()
+                && time1.getFullYear() == time2.getFullYear();
+        }
         function displaySchedule(){
-            var dayNumbers = monthDisplay.getWeekDayNumbers();
+            var prevEvents = document.getElementsByClassName( "schedule_event" );
+            for( var i = prevEvents.length - 1; 0 <= i; i-- ){
+                prevEvents[ i ].remove();
+            }
+            var days = monthDisplay.getWeekDays();
             var column = document.getElementById( "schedule_wrapper" ).children[ 1 ];
             for( i = 0; i < 7; i++ ){
-                column.children[ 0 ].children[ 1 ].innerHTML = dayNumbers[ i ];
+                column.children[ 0 ].children[ 1 ].innerHTML = days[ i ].getDate();
+                for( var j = 0; j < loadedUserData.length; j++ ){
+                    for( var r = 0; r < loadedUserData[ j ].events.length; r++ ){
+                        if( sameDay( loadedUserData[ j ].events[ r ].startTime,
+                            days[ i ] ) && sameDay( loadedUserData[ j ].events[ r ].endTime,
+                            days[ i ] ) ){
+                            var startHour = 
+                                loadedUserData[ j ].events[ r ].startTime.getHours();
+                            var startMinute = 
+                                loadedUserData[ j ].events[ r ].startTime.getMinutes();
+                            var endHour = 
+                                loadedUserData[ j ].events[ r ].endTime.getHours();
+                            var endMinute = 
+                                loadedUserData[ j ].events[ r ].endTime.getMinutes();
+                            var duration = ( endHour - startHour )
+                                + ( endMinute - startMinute ) / 60;
+                            var ev = document.createElement( "DIV" );
+                            ev.setAttribute( "class", "schedule_event" );
+                            ev.innerHTML = "Busy <br>"
+                                + ( startHour > 12 ? startHour - 12 : startHour )
+                                + ":" + ( startMinute < 10 ? "0" + startMinute : startMinute )
+                                + " - " + ( endHour > 12 ? endHour - 12 : endHour )
+                                + ":" + ( endMinute < 10 ? "0" + endMinute : endMinute );
+                            ev.style.background = loadedUserData[ j ].color;
+                            ev.style.marginTop = ( 64 / 60 ) * startMinute + "px";
+                            ev.style.height = 64 * duration + "px";
+                            column.children[ startHour ].appendChild( ev );
+                        }
+                    }
+                }
                 column = column.nextElementSibling;
             }
         }
@@ -244,6 +399,7 @@
             prepareAutocomplete();
             monthDisplay = new MonthDisplay();
             displayCalendarIcon();
+            displaySchedule();
         }
     </script>
     <style>
@@ -356,6 +512,10 @@
             border:none;
             font-size: 13pt;
         }
+        #calendar_right_button:hover,
+        #calendar_left_button:hover {
+            border: 1px solid grey;
+        }
         .calendar_square{
             width:30px;
             font-size:10pt;
@@ -384,7 +544,7 @@
             padding:5px;
         }
         .autocomplete {
-            position:relative;
+            /*position:relative;*/
             display:inline-block;
         }
         #search_input{
@@ -404,6 +564,7 @@
             cursor:pointer;
             background:#fff;
             border: 1px solid #d4d4d4;
+            box-shadow: 0 8px 10px 1px rgba(0,0,0,0.14), 0 3px 14px 2px rgba(0,0,0,0.12), 0 5px 5px -3px rgba(0,0,0,0.2)
         }
         .autocomplete_items>div:hover {
             background-color: #e9e9e9;
@@ -506,6 +667,13 @@
         .schedule_slot_space_filler{
             height:32px;
             border: none;
+        }
+        .schedule_event{
+            color: white;
+            font-size:10pt;
+            z-index:99;
+            overflow:hidden;
+            border-radius:5px;
         }
     </style>
     </head>
