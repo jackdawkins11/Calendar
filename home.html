@@ -2,58 +2,134 @@
 <html>
     <head>
     <script>
+        function monthToString( i ){
+            if( i == 0 ){
+                return "January";
+            }else if( i == 1 ){
+                return "February";
+            }else if( i == 2 ){
+                return "March";
+            }else if( i == 3 ){
+                return "April";
+            }else if( i == 4 ){
+                return "May";
+            }else if( i == 5 ){
+                return "June";
+            }else if( i == 6 ){
+                return "July";
+            }else if( i == 7 ){
+                return "August";
+            }else if( i == 8 ){
+                return "September";
+            }else if( i == 9 ){
+                return "October";
+            }else if( i == 10 ){
+                return "November";
+            }else if( i == 11 ){
+                return "December";
+            }
+        }
+        function weekdayToString( i ){
+            if( i == 0 ){
+                return "Sunday";
+            }else if( i == 1 ){
+                return "Monday";
+            }else if( i == 2 ){
+                return "Tuesday";
+            }else if( i == 3 ){
+                return "Wednesday";
+            }else if( i == 4 ){
+                return "Thursday";
+            }else if( i == 5 ){
+                return "Friday";
+            }else if( i == 6 ){
+                return "Saturday";
+            }
+        }
         var colors = [ "dodgerblue", "orange", "#996633", "#999966",
             "#669900", "#99ff66", "#3399ff", "#9933ff", "#ff3399", "#ff0000" ];
         var colorIdx = 0;
+        var eventId = 0;
         var username;
-        var loadedUserData = [];
-        function loadUserData( name, color ){
-            var userData = {};
-            userData.username = name;
-            userData.color = color;
-            userData.events = [];
+        var users = [];
+        var events = [];
+        function loadUser( name, color ){
+            var user = {};
+            user.username = name;
+            user.color = color;
+            users.push( user );
             if( name == 'jack' ){
                 var newEvent = {};
+                newEvent.username = "jack";
+                newEvent.title = "skateboarding";
+                newEvent.description = "Going skating at palace rec center";
+                newEvent.id = eventId;
+                eventId ++;
                 newEvent.startTime = new Date();
                 newEvent.endTime = new Date();
                 newEvent.endTime.setHours( newEvent.endTime.getHours() + 3 );
-                userData.events.push( newEvent );
+                events.push( newEvent );
             }
             if( name == 'jack1' ){
                 var newEvent = {};
+                newEvent.username = "jack1";
+                newEvent.title = "school";
+                newEvent.description = "Going to augsburg for ACTC classes";
+                newEvent.id = eventId;
+                eventId ++;
                 newEvent.startTime = new Date();
                 newEvent.endTime = new Date();
-                newEvent.endTime.setHours( newEvent.endTime.getHours() + 5 );
-                userData.events.push( newEvent );
+                newEvent.endTime.setHours( newEvent.endTime.getHours() + 3 );
+                events.push( newEvent );
                 var newEvent2 = {};
+                newEvent2.username = "jack1";
+                newEvent2.title = "work";
+                newEvent2.description = "Work at raising canes";
+                newEvent2.id = eventId;
+                eventId ++;
                 newEvent2.startTime = new Date();
                 newEvent2.startTime.setHours( newEvent2.startTime.getHours() + 2 );
                 newEvent2.endTime = new Date();
-                newEvent2.endTime.setHours( newEvent2.endTime.getHours() + 5 );
-                userData.events.push( newEvent2 );
+                newEvent2.endTime.setHours( newEvent2.endTime.getHours() + 3 );
+                events.push( newEvent2 );
             }
             if( name == 'hello' ){
                 var newEvent = {};
+                newEvent.username = "hello";
+                newEvent.title = "party";
+                newEvent.description = "birthday party for my little brother";
+                newEvent.id = eventId;
+                eventId ++;
                 newEvent.startTime = new Date();
                 newEvent.endTime = new Date();
-                newEvent.endTime.setHours( newEvent.endTime.getHours() + 5 );
-                userData.events.push( newEvent );
+                newEvent.endTime.setHours( newEvent.endTime.getHours() + 1 );
+                events.push( newEvent );
                 var newEvent2 = {};
+                newEvent2.username = "hello";
+                newEvent2.title = "Dinner";
+                newEvent2.description = "Having dinner with some friends at black dog";
+                newEvent2.id = eventId;
+                eventId ++;
                 newEvent2.startTime = new Date();
-                newEvent2.startTime.setHours( newEvent2.startTime.getHours() + 3 );
+                newEvent2.startTime.setHours( newEvent2.startTime.getHours() + 1 );
                 newEvent2.endTime = new Date();
-                newEvent2.endTime.setHours( newEvent2.endTime.getHours() + 5 );
-                userData.events.push( newEvent2 );
+                newEvent2.endTime.setHours( newEvent2.endTime.getHours() + 2 );
+                events.push( newEvent2 );
             }
-            loadedUserData.push( userData );
             displaySchedule();
         }
         function forgetUserData( name ){
-            for( var i = 0; i < loadedUserData.length; i++ ){
-                if( loadedUserData[ i ].username == name ){
-                    loadedUserData.splice( i, 1 );
+            for( var i = 0; i < users.length; i++ ){
+                if( users[ i ].username == name ){
+                    users.splice( i, 1 );
                     colorIdx --;
                     break;
+                }
+            }
+            for( var i = 0; i < events.length; i++ ){
+                if( events[ i ].username == name ){ 
+                    events.splice( i, 1 );
+                    i--;
                 }
             }
             displaySchedule();
@@ -112,14 +188,32 @@
                     }
                 }
             };
+            document.addEventListener( "click", function( e ){
+                clearAutocomplete();
+                var popUps = document.getElementsByClassName( "event_info" );
+                if( popUps.length == 1 ){
+                    var popUp = popUps[ 0 ];
+                    var rect = popUp.getBoundingClientRect();
+                    if( !( rect.left <= e.clientX 
+                        && rect.top <= e.clientY
+                        && e.clientX <= rect.right
+                        && e.clientY <= rect.bottom ) ){
+                        popUp.remove();
+                    }
+                }else if( 1 < popUps.length ){
+                    for( var i = popUps.length - 1; 0 <= i; i-- ){
+                        popUps[ i ].remove();
+                    }
+                }
+            });
         }
         function addAutocomplete( arr ){
             clearAutocomplete();
             var addedAtLeastOne = false;
             for( var i = 0; i < arr.length; i++ ){
                 var alreadyLoaded = false;
-                for( var r = 0; r < loadedUserData.length; r++ ){
-                    if( loadedUserData[ r ].username == arr[ i ] ){
+                for( var r = 0; r < users.length; r++ ){
+                    if( users[ r ].username == arr[ i ] ){
                         alreadyLoaded = true;
                         break;
                     }
@@ -140,13 +234,13 @@
                     newResultValue.setAttribute( "class", "search_result_value" );
                     var name = this.innerHTML;
                     newResultValue.innerHTML = name;
-                    loadUserData( name, color );
+                    loadUser( name, color );
                     var newResultButton = document.createElement( "BUTTON" );
                     newResultButton.setAttribute( "class", "search_result_close_button" );
                     newResultButton.innerHTML = "X";
                     newResultButton.onclick = function(){
-                        forgetUserData( event.target.previousElementSibling.innerHTML );
-                        event.target.parentElement.remove();
+                        forgetUserData( this.previousElementSibling.innerHTML );
+                        this.parentElement.remove();
                     };
                     newResult.appendChild( newResultValue );
                     newResult.appendChild( newResultButton );
@@ -180,7 +274,7 @@
                         window.location.href = "index.html";
                     }else{
                         username = response.username;
-                        loadUserData( username, colors[ colorIdx ] );
+                        loadUser( username, colors[ colorIdx ] );
                         colorIdx++;
                     }
                 }
@@ -361,37 +455,151 @@
             var column = document.getElementById( "schedule_wrapper" ).children[ 1 ];
             for( i = 0; i < 7; i++ ){
                 column.children[ 0 ].children[ 1 ].innerHTML = days[ i ].getDate();
-                for( var j = 0; j < loadedUserData.length; j++ ){
-                    for( var r = 0; r < loadedUserData[ j ].events.length; r++ ){
-                        if( sameDay( loadedUserData[ j ].events[ r ].startTime,
-                            days[ i ] ) && sameDay( loadedUserData[ j ].events[ r ].endTime,
-                            days[ i ] ) ){
-                            var startHour = 
-                                loadedUserData[ j ].events[ r ].startTime.getHours();
-                            var startMinute = 
-                                loadedUserData[ j ].events[ r ].startTime.getMinutes();
-                            var endHour = 
-                                loadedUserData[ j ].events[ r ].endTime.getHours();
-                            var endMinute = 
-                                loadedUserData[ j ].events[ r ].endTime.getMinutes();
-                            var duration = ( endHour - startHour )
-                                + ( endMinute - startMinute ) / 60;
-                            var ev = document.createElement( "DIV" );
-                            ev.setAttribute( "class", "schedule_event" );
-                            ev.innerHTML = "Busy <br>"
-                                + ( startHour > 12 ? startHour - 12 : startHour )
-                                + ":" + ( startMinute < 10 ? "0" + startMinute : startMinute )
-                                + " - " + ( endHour > 12 ? endHour - 12 : endHour )
-                                + ":" + ( endMinute < 10 ? "0" + endMinute : endMinute );
-                            ev.style.background = loadedUserData[ j ].color;
-                            ev.style.marginTop = ( 64 / 60 ) * startMinute + "px";
-                            ev.style.height = 64 * duration + "px";
-                            column.children[ startHour ].appendChild( ev );
+                for( var j = 0; j < events.length; j++ ){
+                    if( sameDay( events[ j ].startTime, days[ i ] )
+                        && sameDay( events[ j ].endTime, days[ i ] ) ){
+                        var startHour = events[ j ].startTime.getHours();
+                        var startMinute = events[ j ].startTime.getMinutes();
+                        var endHour = events[ j ].endTime.getHours();
+                        var endMinute = events[ j ].endTime.getMinutes();
+                        var duration = ( endHour - startHour )
+                            + ( endMinute - startMinute ) / 60;
+                        var ev = document.createElement( "DIV" );
+                        ev.setAttribute( "class", "schedule_event" );
+                        ev.innerHTML = events[ j ].title + "<br>"
+                            + ( startHour > 12 ? startHour - 12 : startHour )
+                            + ":" + ( startMinute < 10 ? "0" + startMinute : startMinute )
+                            + " - " + ( endHour > 12 ? endHour - 12 : endHour )
+                            + ":" + ( endMinute < 10 ? "0" + endMinute : endMinute );
+                        for( var r = 0; r < users.length; r++ ){
+                            if( users[ r ].username == events[ j ].username ){
+                                ev.style.background = users[ r ].color;
+                                break;
+                            }
                         }
+                        ev.style.marginTop = ( 64 / 60 ) * startMinute + "px";
+                        ev.style.height = 64 * duration + "px";
+                        ev.onclick = function( event ){
+                            var username = "";
+                            var title = "";
+                            var description = "";
+                            var day = "";
+                            var month = "";
+                            var date = "";
+                            var startHour = 0;
+                            var startMinute = 0;
+                            var endHour = 0;
+                            var endMinute = 0;
+                            var id = this.getElementsByTagName( "INPUT" )[ 0 ].value;
+                            for( var r = 0; r < events.length; r++ ){
+                                if( events[ r ].id == id ){
+                                    username = events[ r ].username;
+                                    title = events[ r ].title;
+                                    description = events[ r ].description;
+                                    day = weekdayToString( events[ r ].startTime.getDay() );
+                                    month = monthToString( events[ r ].startTime.getMonth() );
+                                    dateStr = events[ r ].startTime.getDate();
+                                    startHour = events[ r ].startTime.getHours();
+                                    startMinute = events[ r ].startTime.getMinutes();
+                                    endHour = events[ r ].endTime.getHours();
+                                    endMinute = events[ r ].endTime.getMinutes();
+                                    break;
+                                }
+                            }
+                            var popUp = document.createElement( "div" );
+                            popUp.classList.add( "event_info" );
+                            popUp.style.left = event.clientX + "px";
+                            popUp.style.top = event.clientY + "px";
+                            var topBar = document.createElement( "div" );
+                            topBar.classList.add( "event_info_header" );
+                            var close = document.createElement( "button" );
+                            close.onclick = function(){
+                                this.parentNode.parentNode.remove();
+                            }
+                            close.innerHTML = "X";
+                            close.fontSize = "20px";
+                            close.classList.add( "event_info_close" );
+                            topBar.appendChild( close );
+                            popUp.appendChild( topBar );
+                            var header = document.createElement( "div" );
+                            header.classList.add( "event_info_title" );
+                            var icon = document.createElement( "div" );
+                            icon.classList.add( "event_info_icon" );
+                            var iconColor = document.createElement( "div" );
+                            iconColor.classList.add( "event_info_icon_2" );
+                            for( var k = 0; k < users.length; k++ ){
+                                if( users[ k ].username == username ){
+                                    iconColor.style.background = users[ k ].color;
+                                    break;
+                                }
+                            }
+                            icon.appendChild( iconColor );
+                            var headerText = document.createElement( "div" );
+                            headerText.classList.add( "event_info_text" );
+                            var headerText2 = document.createElement( "div" );
+                            headerText2.classList.add( "event_info_text_2" );
+                            headerText2.innerHTML = title;
+                            headerText.appendChild( headerText2 );
+                            header.appendChild( icon );
+                            header.appendChild( headerText );
+                            popUp.appendChild( header );
+                            var date = document.createElement( "div" );
+                            date.classList.add( "event_info_date" );
+                            var dateIcon = document.createElement( "div" );
+                            dateIcon.classList.add( "event_info_icon" );
+                            var dateText = document.createElement( "div" );
+                            dateText.classList.add( "event_info_text" );
+                            var dateText2 = document.createElement( "div" );
+                            dateText2.classList.add( "event_info_text_2" );
+                            var am1 = "", am2 = "";
+                            if( 12 < startHour ){
+                                am1 = "pm";
+                            }else{
+                                am1 = "am";
+                            }
+                            if( 12 < endHour ){
+                                am2 = "pm";
+                            }else{
+                                am2 = "am";
+                            }
+                            dateText2.innerHTML = day + ", " + month + " " + dateStr
+                                + " " + ( 12 < startHour ? startHour - 12 : startHour )
+                                + ":" + ( startMinute < 10 ? "0" + startMinute : startMinute )
+                                + ( am1 == am2 ? "" : am1 )
+                                + " - " + ( 12 < endHour ? endHour - 12 : endHour )
+                                + ":" + ( endMinute < 10 ? "0" + endMinute : endMinute )
+                                + am2;
+                            dateText2.style.fontSize = "11pt";
+                            dateText.appendChild( dateText2 );
+                            date.appendChild( dateIcon );
+                            date.appendChild( dateText );
+                            popUp.appendChild( date );
+                            var descriptionNode = document.createElement( "div" );
+                            descriptionNode.classList.add( "event_info_item" );
+                            var descIcon = document.createElement( "div" );
+                            descIcon.classList.add( "event_info_icon" );
+                            var descText = document.createElement( "div" );
+                            descText.classList.add( "event_info_text" );
+                            var descText2 = document.createElement( "div" );
+                            descText2.classList.add( "event_info_text_2" );
+                            descText2.innerHTML = description;
+                            descText2.style.fontSize='11pt';
+                            descText.appendChild( descText2 );
+                            descriptionNode.appendChild( descIcon );
+                            descriptionNode.appendChild( descText );
+                            popUp.appendChild( descriptionNode );
+ 
+                            ev.parentNode.appendChild( popUp );
+                        }
+                        var input = document.createElement( "input" );
+                        input.type="hidden";
+                        input.value=events[ j ].id + "";
+                        ev.appendChild( input );
+                        column.children[ startHour ].appendChild( ev );
                     }
                 }
-                column = column.nextElementSibling;
             }
+            column = column.nextElementSibling;
         }
         window.onload = function(){
             checkLogin();
@@ -544,7 +752,7 @@
             padding:5px;
         }
         .autocomplete {
-            /*position:relative;*/
+            position:relative;
             display:inline-block;
         }
         #search_input{
@@ -552,6 +760,9 @@
             background: rgba(90%,90%,90%,100%);
             border:none;
             font-size:14pt;
+        }
+        #search_input:focus{
+            outline:none;
         }
         .autocomplete_items{
             position:absolute;
@@ -564,7 +775,6 @@
             cursor:pointer;
             background:#fff;
             border: 1px solid #d4d4d4;
-            box-shadow: 0 8px 10px 1px rgba(0,0,0,0.14), 0 3px 14px 2px rgba(0,0,0,0.12), 0 5px 5px -3px rgba(0,0,0,0.2)
         }
         .autocomplete_items>div:hover {
             background-color: #e9e9e9;
@@ -674,6 +884,63 @@
             z-index:99;
             overflow:hidden;
             border-radius:5px;
+        }
+        .event_info{
+            width: 400px;
+            position:absolute;
+            background:white;
+            border: 1px solid grey;
+            z-index:200;
+            box-shadow: 0 8px 10px 1px rgba(0,0,0,0.14),
+                0 3px 14px 2px rgba(0,0,0,0.12), 0 5px 5px -3px rgba(0,0,0,0.2);
+            display:flex;
+            flex-direction:column;
+            padding:10px;
+            border-radius: 5px;
+            color: rgb( 30%, 30%, 30% );
+        }
+        .event_info_header{
+            height:30px;
+            display:flex;
+            justify-content:flex-end;
+        }
+        .event_info_close{
+            color: rgb( 30%, 30%, 30% );
+            background: white;
+            border:none;
+            font-size:22px;
+        }
+        .event_info_title{
+            height:40px;
+            display:flex;
+        }
+        .event_info_date{
+            height:20px;
+            display:flex;
+            margin-bottom:20px;
+        }
+        .event_info_item{
+            height:20px;
+            display:flex;
+        }
+        .event_info_icon{
+            width: 60px;
+            display: flex;
+            justify-content:center;
+            align-items:center;
+        }
+        .event_info_icon_2{
+            width:15px;
+            height:15px;
+            border-radius:3px;
+        }
+        .event_info_text{
+            display:flex;
+            flex-direction:column;
+            justify-content:center;
+        }
+        .event_info_text_2{
+            font-size:20pt;
         }
     </style>
     </head>
