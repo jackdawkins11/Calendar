@@ -22,7 +22,7 @@ function login( $username, $password, $dsn, $dbusername, $dbpassword ){
     }
     try{
         $connection = new PDO( $dsn, $dbusername, $dbpassword );
-        $query = "SELECT * FROM members WHERE username='$username' and password='$password'";
+        $query = "SELECT * FROM users WHERE username='$username' and password='$password'";
         $result = $connection->query( $query );
     }catch( PDOException $error ){
         $ret->successfullyLoggedIn = false;

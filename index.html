@@ -23,6 +23,7 @@
             document.getElementById( "log_in_username_input" ).value = "";
             document.getElementById( "log_in_password_input" ).value = "";
             document.getElementById( "sign_up_username_input" ).value = "";
+            document.getElementById( "sign_up_fullname_input" ).value = "";
             document.getElementById( "sign_up_password_input" ).value = "";
             document.getElementById( "sign_up_confirm_password_input" ).value = "";
         }
@@ -97,11 +98,13 @@
                 document.getElementById( "sign_up_button" ).onclick
                     = function(){
                         var username = document.getElementById( "sign_up_username_input" ).value;
+                        var fullName = document.getElementById( "sign_up_fullname_input" ).value;
                         var password = document.getElementById( "sign_up_password_input" ).value;
                         var passwordconfirm = document.getElementById( "sign_up_confirm_password_input" ).value;
                         document.getElementById( "sign_up_password_input" ).value = "";
                         document.getElementById( "sign_up_confirm_password_input" ).value = "";
                         if( username === ""
+                            || fullName === ""
                             || password === ""
                             || passwordconfirm === "" ){
                             document.getElementById( "sign_up_message_wrapper" )
@@ -143,6 +146,7 @@
                     xhr.open( "POST", "register.php" );
                     xhr.setRequestHeader('Content-type', 'application/x-www-form-urlencoded');
                     xhr.send( "username=" + username
+                        + "&fullName=" + fullName
                         + "&password=" + password );
                 }
         }
@@ -158,14 +162,14 @@
             font-family: 'Titillium Web', sans-serif;
             display: flex;
             justify-content: center;
+            align-items:flex-start;
         }
         .form {
-            margin: 40px 40px auto;
+            margin-top: 40px;
             border: 4px;
             padding: 40px;
             max-width: 600px;
-            box-shadow: 0 4px 10px 4px #13232f;
-            background: #13232f;
+            box-shadow: 1px 1px 1px 1px rgba(50%,50%,50%,50%);
         }
         .form_flex {
             width: 100%;
@@ -180,17 +184,17 @@
         .tab {
             width: 50%;
             padding:15px;
-            background: #a0b3b0;
+            background: rgb( 50%, 50%, 50%);
             text-align: center;
             color: white;
-            font-size: 20px;
+            font-size: 15pt;
             cursor: pointer;
         }
         .tab:hover {
-            background: #1ab188;
+            background: dodgerblue;
         }
         .active_tab {
-            background: #1ab188;
+            background: dodgerblue;
         }
         .tab_content{
             display:none;
@@ -200,39 +204,31 @@
             flex-direction: column;
         }
         h1 {
-            text-align:center;
-            color: white;
+           text-align:center;
             font-weight:300;
         }
         .input_wrapper{
             margin: 10px;
-            border: 1px solid #a0b3b0;
+            border: 1px solid rgb( 20%, 20%, 20% );
             padding: 10px;
             display: flex;
             flex-direction: column;
         }
         label {
-            flex: 2;
-            width: 100%;
-            font-size: 15pt;
+            font-size: 13pt;
             border: none;
             outline: none;
         }
         input {
-            flex: 2;
-            width: 100%;
-            font-size: 15pt;
+            font-size: 13pt;
             border: none;
             outline: none;
        }
        input, label {
-            background: #13232f;
             cursor: text;
-            color: white;
         }
         .button_wrapper{
             margin: 10px;
-            border: 1px solid #a0b3b0;
             background: #13232f;
         }
         button {
@@ -240,17 +236,16 @@
             width: 100%;
             font-size: 15pt;
             color: white;
-            background: #a0b3b0;
+            background: rgb( 50%, 50%, 50% );
         }
         button:focus{
-            outline: 3px solid #1ab188;
+            outline: 3px solid dodgerblue;
         }
         .message_wrapper{
             display: none;
             margin: 10px;
             border: none;
             padding: 10px;
-            background: #13232f;
         }
         .message{
             color: red;
@@ -270,6 +265,10 @@
                     <div class="input_wrapper">
                         <label>Username</label>
                         <input type="text" id="sign_up_username_input"/>
+                    </div>
+                    <div class="input_wrapper">
+                        <label>Full name</label>
+                        <input type="text" id="sign_up_fullname_input"/>
                     </div>
                     <div class="input_wrapper">
                         <label>Password</label>
