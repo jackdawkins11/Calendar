@@ -285,8 +285,12 @@
             document.addEventListener( "click", function( e ){
                 clearAutocomplete();
                 var popUps = document.getElementsByClassName( "event_info" );
-                if( popUps.length == 1 ){
-                    var popUp = popUps[ 0 ];
+                if( ( popUps.length ) == 1 ){
+                    if( popUps.length == 1 ){
+                        var popUp = popUps[ 0 ];
+                    }else{
+                        var popUp = popUps2[ 0 ];
+                    }
                     var rect = popUp.getBoundingClientRect();
                     if( !( rect.left <= e.clientX 
                         && rect.top <= e.clientY
@@ -294,20 +298,52 @@
                         && e.clientY <= rect.bottom ) ){
                         popUp.remove();
                     }
-                }else if( 1 < popUps.length ){
+                }else if( 0 < ( popUps.length ) ){
                     for( var i = popUps.length - 1; 0 <= i; i-- ){
                         popUps[ i ].remove();
                     }
                 }
             });
-            var slots = document.getElementsByClassName( "schedule_slot" );
-            for( var i = 0; i < slots.length; i++ ){
-                slots[ i ].onclick = function(){
-                    var x = event.clientX - this.getBoundingClientRect().left;
-                    var y = event.clientY + document.getElementById( "schedule_wrapper" ).scrollTop
-                        - this.getBoundingClientRect().top;
+            document.getElementById( "new_event_button" )
+                .addEventListener( "click", function(){
+                var background = document.createElement( "div" );
+                background.style.position = 'fixed';
+                background.style.height = "100%";
+                background.style.width = "100%";
+                background.style.top = "0px";
+                background.style.right = "0px";
+                background.style.bottom = "0px";
+                background.style.left = "0px";
+                background.style.background = "rgb( 60%, 60%, 60%, 40% )";
+                document.body.appendChild( background );
+                var eventInput = document.createElement( "div" );
+                eventInput.classList.add( "event_input" );
+                background.appendChild( eventInput );
+                var topBar = document.createElement( "div" );
+                topBar.classList.add( "event_input_top_bar" );
+                eventInput.appendChild( topBar );
+                var header = document.createElement( "div" );
+                header.classList.add( "event_input_title" );
+                eventInput.appendChild( header );
+                var titleInputLabel = document.createElement( "div" );
+                titleInputLabel.classList.add( "event_input_title_label" );
+                titleInputLabel.innerHTML = "Add title";
+                header.appendChild( titleInputLabel );
+                var titleInput = document.createElement( "input" );
+                titleInput.classList.add( "event_input_title_input");
+                header.appendChild( titleInput );
+                background.onclick = function( e ){
+                    var box = document.getElementsByClassName( "event_input" )[0]
+                        .getBoundingClientRect();
+                    if( !( box.left <= e.clientX
+                        && e.clientX <= box.right
+                        && box.top <= e.clientY
+                        && e.clientY <= box.bottom ) ){
+                        this.remove();
+                    }
                 }
-            }
+            } );
+
         }
         class MonthDisplay {
             constructor(){
@@ -511,8 +547,13 @@
                             var box = document.getElementById( "schedule_wrapper" )
                                 .getBoundingClientRect();
                             var scrollTop = document.getElementById( "schedule_wrapper" ).scrollTop;
-                            popUp.style.left = (event.clientX - box.left) + "px";
-                            popUp.style.top = (event.clientY + scrollTop - box.top )+ "px";
+                            if( event.clientX + 400 > box.right ){
+                                popUp.style.left = (event.clientX - box.left - 400) + "px";
+                                popUp.style.top = (event.clientY + scrollTop - box.top )+ "px";
+                            }else{
+                                popUp.style.left = (event.clientX - box.left ) + "px";
+                                popUp.style.top = (event.clientY + scrollTop - box.top )+ "px";
+                            }
                             var topBar = document.createElement( "div" );
                             topBar.classList.add( "event_info_header" );
                             var close = document.createElement( "button" );
@@ -968,6 +1009,20 @@
         }
         .event_info_text_2{
             font-size:20pt;
+        }
+        .new_event{
+            width: 400px;
+            position:absolute;
+            background:white;
+            border: 1px solid grey;
+            z-index:200;
+            box-shadow: 0 8px 10px 1px rgba(0,0,0,0.14),
+                0 3px 14px 2px rgba(0,0,0,0.12), 0 5px 5px -3px rgba(0,0,0,0.2);
+            display:flex;
+            flex-direction:column;
+            padding:10px;
+            border-radius: 5px;
+            color: rgb( 30%, 30%, 30% );
         }
     </style>
     </head>
