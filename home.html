@@ -1,6 +1,7 @@
 
 <html>
     <head>
+    <link rel="stylesheet" href="https://fonts.googleapis.com/icon?family=Material+Icons" >
     <script>
         function monthToString( i ){
             if( i == 0 ){
@@ -51,6 +52,7 @@
         var colorIdx = 0;
         var eventId = 0;
         var username;
+        var username___;
         var users = [];
         var events = [];
         var monthDisplay;
@@ -71,19 +73,19 @@
                         newEvent.title = response.events[ i ].title;
                         newEvent.description = response.events[ i ].description;
                         var t = response.events[ i ].startTime.split(/[: -]/);
-                        newEvent.startTime = new Date( t[0],t[1],t[2],t[3],t[4],t[5] );
+                        newEvent.startTime = new Date( t[0],t[1]-1,t[2],t[3],t[4],t[5] );
                         var t = response.events[ i ].endTime.split(/[: -]/);
-                        newEvent.endTime = new Date( t[0],t[1],t[2],t[3],t[4],t[5] );
+                        newEvent.endTime = new Date( t[0],t[1]-1,t[2],t[3],t[4],t[5] );
                         newEvent.id = eventId;
                         eventId++;
                         events.push( newEvent );
                     }
+                    displaySchedule();
                 }
             }
             xhr.open( "POST", "loadUserEvents.php" );
             xhr.setRequestHeader('Content-type', 'application/x-www-form-urlencoded');
             xhr.send( "username=" + user.username );
-            displaySchedule();
         }
         function forgetUserData( name ){
             for( var i = 0; i < users.length; i++ ){
@@ -243,6 +245,7 @@
                         window.location.href = "index.html";
                     }else{
                         username = response.username;
+                        username___ = response.username;
                         loadUser( username, response.fullName, colors[ colorIdx ] );
                         colorIdx++;
                     }
@@ -250,6 +253,128 @@
             }
             xhr.open( "POST", "checkLogin.php" );
             xhr.send();
+        }
+
+        function addTimeSelector( e ){
+            var prev = document.getElementsByClassName( "time_selector" );
+            for( var i = 0; i < prev.length; i++ ){
+                prev[ i ].remove();
+            }
+            var timeSelector = document.createElement( "div" );
+            timeSelector.classList.add( "time_selector" );
+            timeSelector.style.overflowY = "scroll";
+            timeSelector.style.width = "100px";
+            timeSelector.style.maxHeight = "200px";
+            timeSelector.style.background = "white";
+            timeSelector.style.position = "absolute";
+            var box1 = this.getBoundingClientRect();
+            var box2 = document.getElementsByClassName( "event_input" )[0]
+                        .getBoundingClientRect();
+            timeSelector.style.top = (box1.bottom - box2.top) + "px";
+            timeSelector.style.left = (box1.left - box2.left) + "px";
+            timeSelector.style.display = "flex";
+            timeSelector.style.flexDirection = "column";
+            var type = this.children[ 0 ].value;
+            var input = document.createElement( "input" );
+            input.type = "hidden";
+            input.value = type;
+            timeSelector.appendChild( input );
+            if( 2 < type ){
+                var ams = [ "am", "pm" ];
+                for( var am = 0; am < 2; am++ ){
+                    for( var hour = 1; hour < 13; hour++ ){
+                        for( var minute = 0; minute < 60; minute+=15 ){
+                            var option = document.createElement( "div" );
+                            option.style.background = "white";
+                            option.style.color = "black";
+                            option.addEventListener( "mouseover" , function(){
+                                this.style.background = "rgb( 80%, 80%, 80% )";
+                            } );
+                            option.addEventListener( "mouseleave" , function(){
+                                this.style.background = "white";
+                            } );
+                            option.style.fontSize = "16pt";
+                            option.addEventListener( "click", function(event){
+                                var type = this.parentNode.getElementsByTagName( "input" )[0].value;
+                                var date = document.getElementsByClassName( "event_input_date_holder" )
+                                    [0];
+                                date.children[ type ].value = this.innerHTML;
+                                this.parentNode.remove();
+                                event.stopPropagation();
+                            } );
+                            option.innerHTML = hour
+                                + ":" + (minute < 10 ? "0" + minute : minute ) + ams[ am ];
+                            timeSelector.appendChild( option );
+                        }
+                    }
+                }
+            }else if( type == 0 ){
+                for( var i = 0; i < 12; i++ ){
+                    var option = document.createElement( "div" );
+                    option.style.background = "white";
+                    option.addEventListener( "mouseover" , function(){
+                        this.style.background = "rgb( 80%, 80%, 80% )";
+                    } );
+                    option.addEventListener( "mouseleave" , function(){
+                        this.style.background = "white";
+                    } );
+                    option.style.fontSize = "16pt";
+                    option.addEventListener( "click", function(event){
+                        var type = this.parentNode.getElementsByTagName( "input" )[0].value;
+                        var date = document.getElementsByClassName( "event_input_date_holder" )[0];
+                        date.children[ type ].value = this.innerHTML;
+                        this.parentNode.remove();
+                        event.stopPropagation();
+                    } );
+                    option.innerHTML = monthToString( i ).substring(0,3);
+                    timeSelector.appendChild( option );
+                }
+            }else if( type == 1 ){
+                for( var i = 1; i <= 31; i++ ){
+                    var option = document.createElement( "div" );
+                    option.style.background = "white";
+                    option.addEventListener( "mouseover" , function(){
+                        this.style.background = "rgb( 80%, 80%, 80% )";
+                    } );
+                    option.addEventListener( "mouseleave" , function(){
+                        this.style.background = "white";
+                    } );
+                    option.style.fontSize = "16pt";
+                    option.addEventListener( "click", function(event){
+                        var type = this.parentNode.getElementsByTagName( "input" )[0].value;
+                        var date = document.getElementsByClassName( "event_input_date_holder" )[0];
+                        date.children[ type ].value = this.innerHTML;
+                        this.parentNode.remove();
+                        event.stopPropagation();
+                    } );
+                    option.innerHTML = i;
+                    timeSelector.appendChild( option );
+                }
+            }else if( type == 2 ){
+                for( var i = 1990; i<=2050; i+=1 ){
+                    var option = document.createElement( "div" );
+                    option.style.background = "white";
+                    option.addEventListener( "mouseover" , function(){
+                        this.style.background = "rgb( 80%, 80%, 80% )";
+                    } );
+                    option.addEventListener( "mouseleave" , function(){
+                        this.style.background = "white";
+                    } );
+                    option.style.fontSize = "16pt";
+                    option.addEventListener( "click", function(event){
+                        var type = this.parentNode.getElementsByTagName( "input" )[0].value;
+                        var date = document.getElementsByClassName( "event_input_date_holder" )[0];
+                        date.children[ type ].value = this.innerHTML;
+                        this.parentNode.remove();
+                        event.stopPropagation();
+                    } );
+                    option.innerHTML = i;
+                    timeSelector.appendChild( option );
+                }
+            }
+            document.getElementsByClassName( "event_input" )[ 0 ].appendChild( timeSelector );
+            this.dispatchEvent( new Event('input') );
+            this.dispatchEvent( new Event('keydown') );
         }
         function prepareButtons(){
             document.getElementById( "log_out_button" ).onclick = function(){
@@ -305,7 +430,7 @@
                 }
             });
             document.getElementById( "new_event_button" )
-                .addEventListener( "click", function(){
+                .addEventListener( "click", function(event){
                 var background = document.createElement( "div" );
                 background.style.position = 'fixed';
                 background.style.height = "100%";
@@ -314,36 +439,448 @@
                 background.style.right = "0px";
                 background.style.bottom = "0px";
                 background.style.left = "0px";
+                background.style.display = "flex";
+                background.style.justifyContent = "center";
+                background.style.alignItems = "center";
                 background.style.background = "rgb( 60%, 60%, 60%, 40% )";
                 document.body.appendChild( background );
                 var eventInput = document.createElement( "div" );
-                eventInput.classList.add( "event_input" );
+                eventInput.classList.add( "event_input" );          //.event_input  
                 background.appendChild( eventInput );
-                var topBar = document.createElement( "div" );
-                topBar.classList.add( "event_input_top_bar" );
-                eventInput.appendChild( topBar );
                 var header = document.createElement( "div" );
-                header.classList.add( "event_input_title" );
+                header.classList.add( "event_input_title" );        //.event_input_title
+                header.addEventListener( "click", function(){
+                    document.getElementsByClassName( "event_input_title_input" )[ 0 ]
+                        .focus();
+                });
                 eventInput.appendChild( header );
                 var titleInputLabel = document.createElement( "div" );
-                titleInputLabel.classList.add( "event_input_title_label" );
+                titleInputLabel.classList.add( "event_input_title_text" );    //.event_input_title_text
                 titleInputLabel.innerHTML = "Add title";
                 header.appendChild( titleInputLabel );
-                var titleInput = document.createElement( "input" );
+                var titleInput = document.createElement( "input" );         //.event_input_title_input
+                titleInput.onkeydown = function(e){
+                    if( e.keyCode == 13 ){
+                        document.getElementsByClassName( "event_input_date_holder" )
+                           [0].children[0].focus();
+                    }
+                };
                 titleInput.classList.add( "event_input_title_input");
                 header.appendChild( titleInput );
                 background.onclick = function( e ){
-                    var box = document.getElementsByClassName( "event_input" )[0]
+                    var boxes = [];
+                    boxes[0] = document.getElementsByClassName( "event_input" )[0]
                         .getBoundingClientRect();
-                    if( !( box.left <= e.clientX
-                        && e.clientX <= box.right
-                        && box.top <= e.clientY
-                        && e.clientY <= box.bottom ) ){
+                    var inside = false;
+                    for( var i = 0; i < boxes.length; i++ ){
+                        if( ( boxes[ i ].left <= e.clientX
+                            && e.clientX <= boxes[ i ].right
+                            && boxes[ i ].top <= e.clientY
+                            && e.clientY <= boxes[ i ].bottom ) ){
+                            inside = true;
+                        }
+                    }
+                    if( !inside ){
                         this.remove();
                     }
+                };
+                var curDate = new Date();
+                var dateHolder = document.createElement( "div" );
+                dateHolder.classList.add( "event_input_date_holder" );
+                var date1 = document.createElement( "input" );
+                var typeHolder = document.createElement( "input" );
+                typeHolder.type="hidden";
+                typeHolder.value = 0;
+                date1.value = monthToString( curDate.getMonth() ).substring( 0, 3 );
+                date1.style.width="15%";
+                dateHolder.appendChild( date1 );
+                date1.appendChild( typeHolder );
+                var date2 = document.createElement( "input" );
+                typeHolder = document.createElement( "input" );
+                typeHolder.type="hidden";
+                typeHolder.value = 1;
+                date2.value = curDate.getDate() ;
+                date2.style.width="10%";
+                dateHolder.appendChild( date2 );
+                date2.appendChild( typeHolder );
+                var date3 = document.createElement( "input" );
+                typeHolder = document.createElement( "input" );
+                typeHolder.type="hidden";
+                typeHolder.value = 2;
+                date3.value = curDate.getFullYear() ;
+                date3.style.width="15%";
+                dateHolder.appendChild( date3 );
+                date3.appendChild( typeHolder );
+                var date4 = document.createElement( "input" );
+                typeHolder = document.createElement( "input" );
+                typeHolder.type="hidden";
+                typeHolder.value = 3;
+                var h = curDate.getHours();
+                var m = curDate.getMinutes();
+                date4.value = ( h > 12 ? h - 12 : h ) + ":" + (m < 10 ? "0" + m : m )
+                    + ( h <= 12 ? "am" : "pm" );
+                date4.style.width="25%";
+                dateHolder.appendChild( date4 );
+                date4.appendChild( typeHolder );
+                var date5 = document.createElement( "div" );
+                date5.style.display = "flex";
+                date5.style.flexDirection = "column";
+                date5.style.justifyContent = "center";
+                var date55 = document.createElement( "div" );
+                date55.innerHTML = "-" ;
+                date5.appendChild( date55 );
+                dateHolder.appendChild( date5 );
+                var date6 = document.createElement( "input" );
+                typeHolder = document.createElement( "input" );
+                typeHolder.type="hidden";
+                typeHolder.value = 5;
+                date6.style.width="25%";
+                date6.appendChild( typeHolder );
+                h ++;
+                date6.value = ( h > 12 ? h - 12 : h ) + ":" + (m < 10 ? "0" + m : m )
+                    + ( h <= 12 ? "am" : "pm" );
+                dateHolder.appendChild( date6 );
+                date6.appendChild( typeHolder );
+                eventInput.appendChild( dateHolder );
+                eventInput.addEventListener( "click", function(e){
+                    var nodes = document.getElementsByClassName( "time_selector" );
+                    for( var i = 0; i < nodes.length; i++ ){
+                        nodes[ i ].remove();
+                    }
+                } );
+                var inputs = document.getElementsByClassName( "event_input_date_holder" )[0]
+                    .children;
+                for( var i  =0; i < inputs.length; i++ ){
+                    if( i == inputs.length - 2 ){
+                        continue;
+                    }
+                    inputs[ i ].style.outline = 'none';
+                    inputs[ i ].addEventListener( 'focus', addTimeSelector );
+                    inputs[ i ].onclick = function(e){
+                        e.stopPropagation();
+                    };
+                    inputs[ i ].oninput = function(){
+                        var items_ = document.getElementsByClassName( "time_selector" )[0]
+                            .children;
+                        var items = [];
+                        for( var i = 1; i < items_.length; i++ ){
+                            items.push( items_[ i ] );
+                        }
+                        var start = this.value;
+                        for( var i = 0; i < items.length; i++ ){
+                            if( items[i].innerHTML.substring( 0, start.length ).toLowerCase()
+                                == start.toLowerCase() ){
+                                items[i].style.display = 'block';
+                            }else{
+                                items[i].style.display = 'none';
+                            }
+                        }
+                    };
+                    var activeLabel = document.createElement( "input" );
+                    activeLabel.type = "hidden";
+                    activeLabel.value = 0;
+                    inputs[ i ].appendChild( activeLabel );
+                    inputs[ i ].onkeydown = function(e){
+                        var value = this.children[ 1 ].value;
+                        var items_ = document.getElementsByClassName( "time_selector" )[0]
+                            .children;
+                        var items = [];
+                        for( var i = 1; i < items_.length; i++ ){
+                            if( items_[ i ].style.display != 'none' ){
+                                items.push( items_[ i ] );
+                            }
+                        }
+                        if( items.length == 0 ){
+                            var idx = 0;
+                            var siblings = this.parentNode.children;
+                            for( var i = 0; i < siblings.length; i++ ){
+                                if( siblings[ i ] == this ){
+                                    idx = i;
+                                    break;
+                                }
+                            }
+                            if( e.keyCode == 13 ){
+                                e.preventDefault();
+                                if( idx == 3 ){
+                                    siblings[ 5 ].focus();
+                                }else if( idx < 3 ){
+                                    siblings[ idx + 1 ].focus();
+                                }else if( idx == 5 ){
+                                    document.getElementsByClassName( "description_text_field" )[0]
+                                        .focus();
+                                }
+                           }
+                            return;
+                        }
+                        if( e.keyCode == 40 ){
+                            e.preventDefault();
+                            items[ value ].style.background = 'white';
+                            value++;
+                            if( items.length <= value ){
+                                value = 0;
+                            }
+                            items[ value ].style.background = 'dodgerblue';
+                            items[ value ].scrollIntoView(false);
+                        }else if( e.keyCode == 38 ){
+                            e.preventDefault();
+                            items[ value ].style.background = 'white';
+                            value--;
+                            if( value < 0 ){
+                                value = items.length - 1;
+                            }
+                            items[ value ].style.background = 'dodgerblue';
+                            items[ value ].scrollIntoView();
+                        }else if( e.keyCode == 13 ){
+                            e.preventDefault();
+                            if( value < items.length ){
+                                items[ value ].click();
+                            }
+                            var idx = 0;
+                            var siblings = this.parentNode.children;
+                            for( var i = 0; i < siblings.length; i++ ){
+                                if( siblings[ i ] == this ){
+                                    idx = i;
+                                    break;
+                                }
+                            }
+                            if( idx == 3 ){
+                                siblings[ 5 ].focus();
+                                return;
+                            }else if( idx < 3 ){
+                                siblings[ idx + 1 ].focus();
+                                return;
+                           }else if( idx == 5 ){
+                                document.getElementsByClassName( "description_text_field" )[0]
+                                    .focus();
+                                return;
+                           }
+                            
+                        }
+                        this.children[ 1 ].value = value;
+                    };
                 }
+                var desc = document.createElement( "div" );
+                desc.style.display = 'flex';
+                desc.style.flexDirection = 'column';
+                desc.style.margin = "10px";
+                desc.style.border = "1px solid rgb(70%, 70%, 70%)";
+                desc.style.padding = '10px';
+                desc.classList.add( "event_input_description" );
+                var descLabel = document.createElement( "div" );
+                descLabel.innerHTML = "Add description";
+                descLabel.style.color = "rgb(70%, 70%, 70%)";
+                descLabel.style.fontSize = '13pt';
+                descLabel.style.fontSize = '13pt';
+                desc.onclick = function(){
+                    this.children[1].focus();
+                };
+                var descInput = document.createElement( "textarea" );
+                descInput.style.fontSize = '12pt';
+                descInput.cols = 40;
+                descInput.rows = 4;
+                descInput.style.resize = 'none';
+                descInput.style.border = 'none';
+                descInput.style.outline = 'none';
+                desc.appendChild( descLabel );
+                desc.appendChild( descInput );
+                eventInput.appendChild( desc );
+                var button = document.createElement( "div" );
+                button.style.display = 'flex';
+                button.style.justifyContent = 'flex-end';
+                button.style.width = '100%';
+                button.style.paddingRight = '10px';
+                button.style.paddingBottom = '10px';
+                var button2 = document.createElement( "div" );
+                button2.style.border='none';
+                button2.style.color='white';
+                button2.style.background = 'dodgerblue';
+                button2.style.borderRadius = '5px';
+                button2.innerHTML = 'Save';
+                button2.style.padding = '5px';
+                button2.style.fontSize = '15pt';
+                button2.style.cursor = "pointer";
+                button2.onclick = function(){
+                    var oldMessages = document.getElementsByClassName( "event_input_fail_message" );
+                    for( var i = 0; i < oldMessages.length; i++ ){
+                        oldMessages[ i ].remove();
+                    }
+                    function parseInputs(){
+                        var title = document.getElementsByClassName( "event_input_title_input" )[0]
+                            .value;
+                        var monthStr = document.getElementsByClassName( "event_input_date_holder" )[0]
+                            .children[0].value;
+                        for(var i = 0; i < 12; i++ ){
+                            if( monthToString( i ).substring( 0, 3 ).toLowerCase()
+                                == monthStr.toLowerCase() ){
+                                i++;
+                                if( i < 10 ){
+                                    var month = "0" + i;
+                                }else{
+                                    var month = i + "";
+                                }
+                                break;
+                            }else{
+                                if( i == 11 ){
+                                    var obj = {};
+                                    obj.fail = true;
+                                    obj.message = "Please enter a valid month";
+                                    return obj;
+                                }
+                            }
+                        }
+                        var year = document.getElementsByClassName( "event_input_date_holder" )[0]
+                            .children[2].value + "";
+                        if( !/^(19|20)\d{2}$/.test( year ) ){
+                            var obj = {};
+                            obj.fail = true;
+                            obj.message = "Please enter a valid year";
+                            return obj;
+                        }
+                        var day = document.getElementsByClassName( "event_input_date_holder" )[0]
+                            .children[1].value;
+                        if( !/^\d{2}$/.test( day )
+                            || day > 31 ){
+                            var obj = {};
+                            obj.fail = true;
+                            obj.message = "Please enter a valid day of the month";
+                            return obj;
+                        }
+                        if( day < 10 ){
+                            day = "0" + day;
+                        }else{
+                            day = day + "";
+                        }
+                        var starttime = document.getElementsByClassName( "event_input_date_holder" )[0]
+                            .children[3].value;
+                        if( starttime.substring( starttime.length -2, starttime.length )
+                            == "am" ){
+                            var starthour = 0;
+                        }else if( starttime.substring( starttime.length -2, starttime.length )
+                            == "pm" ){
+                            var starthour = 12;
+                        }else{
+                            var obj = {};
+                            obj.fail = true;
+                            obj.message = "Please enter a valid start time";
+                            return obj;
+                        }
+                        var sep = starttime.indexOf( ":" );
+                        if( sep == -1 ){
+                            var obj = {};
+                            obj.fail = true;
+                            obj.message = "Please enter a valid start time";
+                            return obj;
+                        }
+                        if( !/^\d{1,2}$/.test( starttime.substring( 0, sep ) ) ){
+                            var obj = {};
+                            obj.fail = true;
+                            obj.message = "Please enter a valid start time";
+                            return obj;
+                        }
+                        starthour += parseInt( starttime.substring( 0, sep ) );
+                        if( !/^\d{2}$/.test( starttime.substring( sep+1, sep+3 ) ) ){
+                            var obj = {};
+                            obj.fail = true;
+                            obj.message = "Please enter a valid start time";
+                            return obj;
+                        }
+                        var startminute = parseInt( starttime.substring( sep+1, sep + 3 ) );
+                        var startTimeString = year + "-" + month + "-" + day
+                            + " " + starthour + ":" + startminute + ":00";
+                        var endtime = document.getElementsByClassName( "event_input_date_holder" )[0]
+                            .children[5].value;
+                        if( endtime.substring( endtime.length -2, endtime.length )
+                            == "am" ){
+                            var endhour = 0;
+                        }else if( endtime.substring( endtime.length -2, endtime.length )
+                            == "pm" ){
+                            var endhour = 12;
+                        }else{
+                            var obj = {};
+                            obj.fail = true;
+                            obj.message = "Please enter a valid end time";
+                            return obj;
+                        }
+                        var sep = endtime.indexOf( ":" );
+                        if( sep == -1 ){
+                            var obj = {};
+                            obj.fail = true;
+                            obj.message = "Please enter a valid end time";
+                            return obj;
+                        }
+                        if( !/^\d{1,2}$/.test( endtime.substring( 0, sep ) ) ){
+                            var obj = {};
+                            obj.fail = true;
+                            obj.message = "Please enter a valid end time";
+                            return obj;
+                        }
+                        endhour += parseInt( endtime.substring( 0, sep ) );
+                        if( !/^\d{2}$/.test( endtime.substring( sep+1, sep+3 ) ) ){
+                            var obj = {};
+                            obj.fail = true;
+                            obj.message = "Please enter a valid end time";
+                            return obj;
+                        }
+                        var endminute = parseInt( endtime.substring( sep+1, sep + 3 ) );
+                        var endTimeString = year + "-" + month + "-" + day
+                            + " " + endhour + ":" + endminute + ":00";
+                        var obj = {};
+                        obj.fail = false;
+                        obj.title = title;
+                        obj.startTime = startTimeString;
+                        obj.endTime = endTimeString;
+                        obj.description = document.getElementsByClassName( "event_input_description" )
+                            [0].children[1].value;
+                        if( obj.title == "" ){
+                            obj.title += " ";
+                        }
+                        if( obj.description == "" ){
+                            obj.description += " ";
+                        }
+                        return obj;
+                    }
+                    var obj = parseInputs();
+                    if( obj.fail ){
+                        var failMessage = document.createElement( "div" );
+                        failMessage.style.textAlign = "center";
+                        failMessage.innerHTML = obj.message;
+                        failMessage.style.height = "30px";
+                        failMessage.style.color = 'red';
+                        failMessage.classList.add( "event_input_fail_message" );
+                        document.getElementsByClassName( "event_input_description" )[0]
+                            .after( failMessage );
+                    }else{
+                        var xhr = new XMLHttpRequest();
+                        xhr.onreadystatechange = function(){
+                            if( this.readyState == 4 
+                                && this.status == 200 ){
+                                document.getElementsByClassName( "event_input" )[0]
+                                    .parentNode.remove();
+                                for( var i = 0; i < users.length; i++ ){
+                                    if( users[ i ].username == username ){
+                                        var colors = users[ i ].color;
+                                        var fullname = users[ i ].fullName;
+                                    }
+                                }
+                                forgetUserData( username );
+                                loadUser( username, fullname, colors );
+                                displaySchedule();
+                            }
+                        };
+                        xhr.open( "POST", "addEvent.php" );
+                        xhr.setRequestHeader('Content-type', 'application/x-www-form-urlencoded');
+                        xhr.send( "username=" + username
+                            + "&title=" + obj.title
+                            + "&description=" + obj.description
+                            + "&startTime=" + obj.startTime
+                            + "&endTime=" + obj.endTime );
+                    }
+                };
+                button.appendChild( button2 );
+                eventInput.appendChild( button );
+                titleInput.focus();
+                descInput.classList.add( "description_text_field" );
             } );
-
         }
         class MonthDisplay {
             constructor(){
@@ -556,13 +1093,102 @@
                             }
                             var topBar = document.createElement( "div" );
                             topBar.classList.add( "event_info_header" );
-                            var close = document.createElement( "button" );
+                            var close = document.createElement( "i" );
                             close.onclick = function(){
                                 this.parentNode.parentNode.remove();
                             }
-                            close.innerHTML = "X";
+                            close.innerHTML = "close";
                             close.fontSize = "20px";
                             close.classList.add( "event_info_close" );
+                            close.classList.add( "material-icons" );
+                            if( username == username___ ){
+                            var delet = document.createElement( "i" );
+                            delet.onclick = function(){
+                                var popup = this.parentNode.parentNode;
+                                var title = popup.children[ 1 ].children[1].children[0].innerHTML;
+                                if( title == "" ){
+                                    title = " ";
+                                }
+                                var date = popup.children[ 2 ].children[1].children[0].innerHTML
+                                    .split(" ");
+                                var weekdayString = date[0].substring( 0, date[0].length-1 );
+                                var monthString = date[1];
+                                for( var i = 0; i < 12; i++ ){
+                                    if( monthToString( i ).toLowerCase()
+                                        == monthString.toLowerCase() ){
+                                        var month = i + 1;
+                                        break;
+                                    }    
+                                }
+                                var dayOfMonth = parseInt( date[2] );
+                                if( /[ap]/.test( date[3] ) ){
+                                    var sameAsOther = false;
+                                    var startTime = date[3]
+                                        .substring(0 ,/[ap]/.exec( date[3] ).index )
+                                        .split( ":" );
+                                }else{
+                                    var sameAsOther = true;
+                                    var startTime = date[3].split( ":" );
+                                }
+                                var startHour = parseInt( startTime[0] );
+                                var startMinute = parseInt( startTime[1] );
+                                if( date[5].substring( date[5].match( '[ap]' ).index,
+                                    date[5].length ) == 'pm' ){
+                                    var endHour = 12;
+                                    if( sameAsOther ){
+                                        startHour += 12;
+                                    }
+                                }else{
+                                    var endHour = 0;
+                                    if( !sameAsOther ){
+                                        startHour += 12;
+                                    }
+                                }
+                                var endTime = date[5].substring(0,date[5].match( '[ap]' ).index )
+                                    .split( ":" );
+                                endHour += parseInt( endTime[0] );
+                                var endMinute = parseInt( endTime[1] );
+                                var startDate = monthDisplay.getSelectedDate().getFullYear()
+                                    + "-" + ( month < 10 ? "0" + month : month )
+                                    + "-" + ( dayOfMonth < 10 ? "0" + dayOfMonth : dayOfMonth )
+                                    + " " + ( startHour < 10 ? "0" + startHour : startHour )
+                                    + ":" + ( startMinute < 10 ? "0" + startMinute : startMinute )
+                                    + ":00";
+                                var endDate = monthDisplay.getSelectedDate().getFullYear()
+                                    + "-" + ( month < 10 ? "0" + month : month )
+                                    + "-" + ( dayOfMonth < 10 ? "0" + dayOfMonth : dayOfMonth )
+                                    + " " + ( endHour < 10 ? "0" + endHour : endHour )
+                                    + ":" + ( endMinute < 10 ? "0" + endMinute : endMinute )
+                                    + ":00";
+                                var xhr = new XMLHttpRequest();
+                                xhr.open( "POST", "deleteEvent.php" );
+                                xhr.setRequestHeader('Content-type', 'application/x-www-form-urlencoded');
+                                xhr.onreadystatechange = function(){
+                                    if( this.readyState == 4 
+                                        && this.status == 200 ){
+                                        for( var i = 0; i < users.length; i++ ){
+                                            if( users[ i ].username == username ){
+                                                var colors = users[ i ].color;
+                                                var fullname = users[ i ].fullName;
+                                            }
+                                        }
+                                        forgetUserData( username );
+                                        loadUser( username, fullname, colors );
+                                        displaySchedule();
+                                    }
+                                };
+                                xhr.send( "username=" + username
+                                    + "&title=" + title
+                                    + "&startTime=" + startDate
+                                    + "&endTime=" + endDate );
+                                this.parentNode.parentNode.remove();
+                            }
+                            delet.innerHTML = "delete";
+                            delet.fontSize = "20px";
+                            delet.classList.add( "event_info_close" );
+                            delet.classList.add( "material-icons" );
+                            topBar.appendChild( delet );
+                           }
                             topBar.appendChild( close );
                             popUp.appendChild( topBar );
                             var header = document.createElement( "div" );
@@ -622,6 +1248,11 @@
                             descriptionNode.classList.add( "event_info_item" );
                             var descIcon = document.createElement( "div" );
                             descIcon.classList.add( "event_info_icon" );
+                            var descIconI = document.createElement( "i" );
+                            descIconI.innerHTML = "menu";
+                            descIconI.classList.add( "event_info_icon_inner" );
+                            descIconI.classList.add( "material-icons" );
+                            descIcon.appendChild( descIconI );
                             var descText = document.createElement( "div" );
                             descText.classList.add( "event_info_text" );
                             var descText2 = document.createElement( "div" );
@@ -636,6 +1267,11 @@
                             attendeeNode.classList.add( "event_info_item" );
                             var attendeeIcon = document.createElement( "div" );
                             attendeeIcon.classList.add( "event_info_icon" );
+                            var aIconI = document.createElement( "i" );
+                            aIconI.innerHTML = "person";
+                            aIconI.classList.add( "event_info_icon_inner" );
+                            aIconI.classList.add( "material-icons" );
+                            attendeeIcon.appendChild( aIconI );
                             var attendeeText = document.createElement( "div" );
                             attendeeText.classList.add( "event_info_text" );
                             var attendeeText2 = document.createElement( "div" );
@@ -722,6 +1358,7 @@
             border:none;
             color: rgba(30%,30%,30%,100%);
             box-shadow: 1px 1px 1px 1px rgba(50%,50%,50%,50%);
+            cursor:pointer;
         }
         #header_heading{
             text-align:center;
@@ -754,6 +1391,7 @@
             font-size:15pt;
             display:flex;justify-content:center;
             align-items:center;
+            cursor:pointer;
         }
         #bigfont {
             font-size:30pt;
@@ -795,6 +1433,7 @@
             background:none;
             border:none;
             font-size: 13pt;
+            cursor:pointer;
         }
         #calendar_right_button:hover,
         #calendar_left_button:hover {
@@ -805,6 +1444,7 @@
             font-size:10pt;
             display:flex; justify-content:center;
             align-items:center;
+            cursor:pointer;
         }
         .calendar_square:hover{
             border: 1px solid grey;
@@ -883,6 +1523,7 @@
             border-radius:50%;
             border:none;
             font-size:12pt;
+            cursor:pointer;
         }
         #right_panel{
             width:100%;
@@ -951,6 +1592,7 @@
             z-index:99;
             overflow:hidden;
             border-radius:5px;
+            cursor:pointer;
         }
         .event_info{
             width: 400px;
@@ -972,10 +1614,12 @@
             justify-content:flex-end;
         }
         .event_info_close{
+            margin-left:10px;
             color: rgb( 30%, 30%, 30% );
             background: white;
             border:none;
             font-size:22px;
+            cursor:pointer;
         }
         .event_info_title{
             height:40px;
@@ -1010,19 +1654,62 @@
         .event_info_text_2{
             font-size:20pt;
         }
-        .new_event{
-            width: 400px;
-            position:absolute;
+        .event_input{
+            width: 450px;
             background:white;
             border: 1px solid grey;
-            z-index:200;
-            box-shadow: 0 8px 10px 1px rgba(0,0,0,0.14),
-                0 3px 14px 2px rgba(0,0,0,0.12), 0 5px 5px -3px rgba(0,0,0,0.2);
+            z-index:2000;
             display:flex;
             flex-direction:column;
-            padding:10px;
+            align-items:center;
             border-radius: 5px;
-            color: rgb( 30%, 30%, 30% );
+            position:absolute;
+        }
+        .event_input_title{
+            color: rgb( 60%, 60%, 60% );
+            width:85%;
+            display:flex;
+            flex-direction:column;
+            background: white;
+            margin:10px;
+            margin-top:20px;
+            cursor:text;
+            border-bottom: 1px solid blue;
+         }
+        .event_input_title_text{
+            background:none;
+            font-size:15pt;
+        }
+        .event_input_title_input{
+            border:none;
+            background:none;
+            font-size:14pt;
+        }
+        .event_input_title_input:focus{
+            outline:none;
+        }
+        .event_input_date_holder{
+            display:flex;
+            flex-direction:row;
+            width:70%;
+        }
+        .event_input_date_holder>input{
+            margin:3px;
+            border:none;
+            background: white;
+            font-size:12pt;
+            padding:5px;
+            text-align:center;
+            color: rgb( 20%, 20%, 20% );
+        }
+        .event_input_date_holder>input:hover{
+            background: rgb( 90%, 90%, 90%, 70% );
+        }
+        .event_input_date_holder>input:focus{
+            background: rgb( 90%, 90%, 90%, 70% );
+        }
+        .event_input_description:hover{
+            cursor:text;
         }
     </style>
     </head>
@@ -1039,9 +1726,9 @@
             <div id="main_container">
                 <div id="left_panel">
                     <div id="new_event" >
-                        <button id="new_event_button">
+                        <div id="new_event_button" >
                             <div id="bigfont">+</div><div id="normalfont">New</div>
-                        </button>
+                        </div>
                     </div>
                     <div id="calendar" >
                         <div id="calendar_wrapper">

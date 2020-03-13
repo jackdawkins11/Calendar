@@ -26,6 +26,11 @@
             document.getElementById( "sign_up_fullname_input" ).value = "";
             document.getElementById( "sign_up_password_input" ).value = "";
             document.getElementById( "sign_up_confirm_password_input" ).value = "";
+            if( document.getElementById( "sign_up_tab" ).classList.contains( "active_tab" ) ){
+                document.getElementById( "sign_up_username_input" ).focus();
+            }else{
+                document.getElementById( "log_in_username_input" ).focus();
+            }
         }
         function prepareTabs(){
             var tabs = document.getElementsByClassName( "tab_group" )[0].children;
@@ -58,6 +63,42 @@
                     this.children[ 1 ].focus();
                 }
             }
+            document.getElementById( "log_in_username_input" ).onkeydown = function(e){
+                if( e.keyCode == 13 ){
+                    e.preventDefault();
+                    document.getElementById( "log_in_password_input" ).focus();
+                }
+            };
+            document.getElementById( "log_in_password_input" ).onkeydown = function(e){
+                if( e.keyCode == 13 ){
+                    e.preventDefault();
+                    document.getElementById( "log_in_button" ).click();
+                }
+            };
+            document.getElementById( "sign_up_username_input" ).onkeydown = function(e){
+                if( e.keyCode == 13 ){
+                    e.preventDefault();
+                    document.getElementById( "sign_up_fullname_input" ).focus();
+                }
+            };
+            document.getElementById( "sign_up_fullname_input" ).onkeydown = function(e){
+                if( e.keyCode == 13 ){
+                    e.preventDefault();
+                    document.getElementById( "sign_up_password_input" ).focus();
+                }
+            };
+            document.getElementById( "sign_up_password_input" ).onkeydown = function(e){
+                if( e.keyCode == 13 ){
+                    e.preventDefault();
+                    document.getElementById( "sign_up_confirm_password_input" ).focus();
+                }
+            };
+            document.getElementById( "sign_up_confirm_password_input" ).onkeydown = function(e){
+                if( e.keyCode == 13 ){
+                    e.preventDefault();
+                    document.getElementById( "sign_up_button" ).click();
+                }
+            };
         }
         function prepareButtons(){
             document.getElementById( "log_in_button" ).onclick
@@ -87,6 +128,7 @@
                                         .style.display = 'block';
                                     document.getElementById( "log_in_error_message" )
                                         .innerHTML = response.errorMessage;
+                                    document.getElementById( "log_in_username_input" ).focus();
                                 }
                             }
                         }
@@ -155,6 +197,7 @@
             prepareInputWrappers();
             prepareTabs();
             prepareButtons();
+            document.getElementById( "log_in_username_input" ).focus();
         }
     </script> 
     <style type="text/css">
@@ -240,6 +283,9 @@
         }
         button:focus{
             outline: 3px solid dodgerblue;
+        }
+        button{
+            cursor:pointer;
         }
         .message_wrapper{
             display: none;

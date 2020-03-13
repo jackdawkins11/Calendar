@@ -6,7 +6,6 @@ require "config.php";
 function loadEvents( $username, $dbusername, $dbpassword, $dsn ){
     if( preg_match( '/[^A-Za-z]/', $username ) ){
         $response->events = array();
-        $response->message = "first fail";
         return $response;
     }
     try{
@@ -15,7 +14,6 @@ function loadEvents( $username, $dbusername, $dbpassword, $dsn ){
         $result = $connection->query( $query );
     }catch( PDOException $e ){
         $response->events = array();
-        $response->message = "second fail";
         return $response;
     }
     if( $events = $result->fetchAll() ){
@@ -26,10 +24,11 @@ function loadEvents( $username, $dbusername, $dbpassword, $dsn ){
             $event->description = $events[ $i ][ 2 ];
             $event->startTime = $events[ $i ][ 3 ];
             $event->endTime = $events[ $i ][ 4 ];
-            array_push( $response->events, $event );
+            array_push( $response->events, clone($event) );
         }
         return $response;
     }else{
+        $response->events = array();
         return $response;
     }
 }

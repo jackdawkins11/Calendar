@@ -8,26 +8,25 @@
 
 require "config.php";
 
-function addEvent( $username, $title, $description, $startTime, $endTime,
+function addEvent( $username, $title, $startTime, $endTime,
     $dsn, $dbusername, $dbpassword ){
     try{
         $connection = new PDO( $dsn, $dbusername, $dbpassword );
         $query = $connection->prepare(
-            "insert into events (username,title,description,starttime,endtime)"
-            . " values ( ?, ?, ?, ?, ? )" );
+            "delete from events where username=? and title=? and starttime=? and endtime=?" );
         $query->execute(
-            array($username,$title,$description,$startTime,$endTime)
+            array($username,$title,$startTime,$endTime)
         );
     }catch( PDOException $e ){
-        $response->addedEvent = false;
+        $response->deletedEvent = false;
         $response->message = "Failed to execute statement";
         return $response;
     }
     if( $query->rowCount() ){
-        $response->addedEvent = true;
+        $response->deletedEvent = true;
         return $response;
     }else{
-        $response->addedEvent = false;
+        $response->deletedEvent = false;
         $response->message = "unknown error";
         return $response;
     }
@@ -35,11 +34,11 @@ function addEvent( $username, $title, $description, $startTime, $endTime,
 
 session_start();
 if( !isset( $_SESSION[ 'loggedin' ] ) ){
-    $response->addedEvent = false;
+    $response->deletedEvent = false;
     echo json_encode( $response );
 }else{
     echo json_encode( addEvent( $_POST[ 'username' ], $_POST[ 'title' ],
-        $_POST[ 'description' ], $_POST[ 'startTime' ], $_POST[ 'endTime' ],
+        $_POST[ 'startTime' ], $_POST[ 'endTime' ],
         $dsn, $dbusername, $dbpassword ) );
 }
 
