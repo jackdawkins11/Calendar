@@ -47,20 +47,37 @@
                 return "Saturday";
             }
         }
-        var colors = [ "dodgerblue", "orange", "#996633", "#999966",
+        var colors = [ "orange", "#996633", "#999966",
             "#669900", "#99ff66", "#3399ff", "#9933ff", "#ff3399", "#ff0000" ];
-        var colorIdx = 0;
         var eventId = 0;
         var username;
         var username___;
         var users = [];
         var events = [];
         var monthDisplay;
-        function loadUser( username, fullName, color ){
+        function loadUser( username, fullName ){
             var user = {};
             user.username = username;
             user.fullName = fullName;
-            user.color = color;
+            if( user.username == username___ ){
+                user.color = 'dodgerblue';
+            }else{
+                for( var i = 0; i < colors.length; i++ ){
+                    var taken = false;
+                    for( var r = 0; r < users.length; r++ ){
+                        if( users[ r ].color == colors[ i ] ){
+                            taken = true;
+                            break;
+                        }
+                    }
+                    if( !taken ){
+                        user.color = colors[ i ];
+                        break;
+                    }else if( i == colors.length - 1 ){
+                        user.color = colors[ Math.random() * colors.length ];
+                    }
+                }
+            }
             users.push( user );
             var xhr = new XMLHttpRequest();
             xhr.onreadystatechange = function(){
@@ -82,7 +99,7 @@
                     }
                     displaySchedule();
                 }
-            }
+            };
             xhr.open( "POST", "loadUserEvents.php" );
             xhr.setRequestHeader('Content-type', 'application/x-www-form-urlencoded');
             xhr.send( "username=" + user.username );
@@ -91,7 +108,6 @@
             for( var i = 0; i < users.length; i++ ){
                 if( users[ i ].username == name ){
                     users.splice( i, 1 );
-                    colorIdx --;
                     break;
                 }
             }
@@ -192,11 +208,14 @@
                 valueHolder.value = arr[ i ].fullName;
                 b.appendChild( valueHolder );
                 b.onclick = function(){
-                    var color = colors[ colorIdx ];
-                    colorIdx++;
                     var username = this.children[2].value;
                     var fullName = this.children[3].value;
-                    loadUser( username, fullName, color );
+                    loadUser( username, fullName );
+                    for( var i = 0; i <users.length; i++ ){
+                           if( users[ i ].username == username ){
+                                var color = users[ i ].color;
+                           }
+                    }
                     var newResult = document.createElement( "DIV" );
                     newResult.setAttribute( "class",  "search_result" );
                     newResult.style.border = "2px solid " + color;
@@ -246,8 +265,7 @@
                     }else{
                         username = response.username;
                         username___ = response.username;
-                        loadUser( username, response.fullName, colors[ colorIdx ] );
-                        colorIdx++;
+                        loadUser( username, response.fullName );
                     }
                 }
             }
@@ -738,7 +756,7 @@
                         }
                         var day = document.getElementsByClassName( "event_input_date_holder" )[0]
                             .children[1].value;
-                        if( !/^\d{2}$/.test( day )
+                        if( !/^\d{1,2}$/.test( day )
                             || day > 31 ){
                             var obj = {};
                             obj.fail = true;
@@ -858,12 +876,11 @@
                                     .parentNode.remove();
                                 for( var i = 0; i < users.length; i++ ){
                                     if( users[ i ].username == username ){
-                                        var colors = users[ i ].color;
                                         var fullname = users[ i ].fullName;
                                     }
                                 }
                                 forgetUserData( username );
-                                loadUser( username, fullname, colors );
+                                loadUser( username, fullname );
                                 displaySchedule();
                             }
                         };
@@ -1054,6 +1071,7 @@
                         ev.style.height = 64 * duration + "px";
                         ev.onclick = function( event ){
                             var username = "";
+                            var fullName = "";
                             var title = "";
                             var description = "";
                             var day = "";
@@ -1078,6 +1096,12 @@
                                     endMinute = events[ r ].endTime.getMinutes();
                                     break;
                                 }
+                            }
+                            for( var i = 0; i < users.length; i++ ){
+                                if( users[ i ].username == username ){
+                                    fullName = users[ i ].fullName;
+                                    break;
+                                }    
                             }
                             var popUp = document.createElement( "div" );
                             popUp.classList.add( "event_info" );
@@ -1168,12 +1192,11 @@
                                         && this.status == 200 ){
                                         for( var i = 0; i < users.length; i++ ){
                                             if( users[ i ].username == username ){
-                                                var colors = users[ i ].color;
                                                 var fullname = users[ i ].fullName;
                                             }
                                         }
                                         forgetUserData( username );
-                                        loadUser( username, fullname, colors );
+                                        loadUser( username, fullname );
                                         displaySchedule();
                                     }
                                 };
@@ -1276,7 +1299,11 @@
                             attendeeText.classList.add( "event_info_text" );
                             var attendeeText2 = document.createElement( "div" );
                             attendeeText2.classList.add( "event_info_text_2" );
-                            attendeeText2.innerHTML = username + "(creator)";
+                            var attendHid = document.createElement( "input" );
+                            attendHid.type = "hidden";
+                            attendHid.value = username;
+                            attendeeText2.appendChild( attendHid );
+                            attendeeText2.innerHTML = fullName + "(creator)";
                             attendeeText2.style.fontSize='11pt';
                             attendeeText.appendChild( attendeeText2 );
                             attendeeNode.appendChild( attendeeIcon );
