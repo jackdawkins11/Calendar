@@ -4,19 +4,15 @@
 require "config.php";
 
 function loadEvents( $username, $dbusername, $dbpassword, $dsn ){
-    if( preg_match( '/[^A-Za-z]/', $username ) ){
-        $response->events = array();
-        return $response;
-    }
     try{
         $connection = new PDO( $dsn, $dbusername, $dbpassword );
-        $query = "SELECT * FROM events WHERE username='$username'";
-        $result = $connection->query( $query );
+        $query = $connection->prepare( "SELECT * FROM events WHERE username=?" );
+        $query->execute( array( $username ) );
     }catch( PDOException $e ){
         $response->events = array();
         return $response;
     }
-    if( $events = $result->fetchAll() ){
+    if( $events = $query->fetchAll() ){
         $response->events = array();
         for( $i=0; $i<sizeof( $events ); $i++ ){
             $event->username = $events[ $i ][ 0 ];

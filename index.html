@@ -114,6 +114,7 @@
                             .innerHTML = "Please fill out all forms";
                         document.getElementById( "log_in_error_message" )
                             .style.color = 'red';
+                        document.getElementById( "log_in_username_input" ).focus();
                         return;
                     }
                     var xhr = new XMLHttpRequest();
@@ -155,6 +156,7 @@
                                 .innerHTML = "Please fill out all forms";
                             document.getElementById( "sign_up_message" )
                                 .style.color = 'red';
+                            document.getElementById( "sign_up_username_input" ).focus();
                             return;
                         }
                         if( password != passwordconfirm ){
@@ -164,6 +166,7 @@
                                 .innerHTML = "Passwords must match";
                             document.getElementById( "sign_up_message" )
                                 .style.color = 'red';
+                            document.getElementById( "sign_up_username_input" ).focus();
                             return;
                         }
                         var xhr = new XMLHttpRequest();
@@ -183,6 +186,7 @@
                                 document.getElementById( "sign_up_message" )
                                     .style.color = 'red';
                              }
+                            document.getElementById( "sign_up_username_input" ).focus();
                         }
                     }
                     xhr.open( "POST", "register.php" );
