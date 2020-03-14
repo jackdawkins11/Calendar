@@ -804,7 +804,8 @@
                         }
                         var startminute = parseInt( starttime.substring( sep+1, sep + 3 ) );
                         var startTimeString = year + "-" + month + "-" + day
-                            + " " + starthour + ":" + startminute + ":00";
+                            + " " + starthour + ":"
+                            + ( startminute < 10 ? "0" + startminue : startminute ) + ":00";
                         var endtime = document.getElementsByClassName( "event_input_date_holder" )[0]
                             .children[5].value;
                         if( endtime.substring( endtime.length -2, endtime.length )
@@ -841,7 +842,8 @@
                         }
                         var endminute = parseInt( endtime.substring( sep+1, sep + 3 ) );
                         var endTimeString = year + "-" + month + "-" + day
-                            + " " + endhour + ":" + endminute + ":00";
+                            + " " + endhour + ":"
+                            + ( endminute < 10 ? "0" + endminute : endminute ) + ":00";
                         var obj = {};
                         obj.fail = false;
                         obj.title = title;
