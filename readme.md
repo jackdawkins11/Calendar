@@ -15,7 +15,7 @@ You can make an account and then create and delete events as well as view every 
 
 * User accounts
 * Create events with the "New" button
-* Display other account's events by typing there name under "Meet with..."
+* Display other account's events by typing their name under "Meet with..."
 * Change the displayed week using the calendar in the upper-left corner
 * Click on events to view there details
 
