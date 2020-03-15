@@ -4,7 +4,7 @@
 $dbhost = "localhost";
 $dbusername = "jack";
 $dbpassword = "jack";
-$dbname = "simplelogin";
+$dbname = "calendar";
 $dsn = "mysql:host=$dbhost;dbname=$dbname";
 
 ?>

@@ -11,7 +11,7 @@
  * and errorMessage="Some error message"
  */
 
-require "config.php";
+require "../config.php";
 
 function login( $username, $password, $dsn, $dbusername, $dbpassword ){
     if( preg_match( "/[^A-Za-z0-9]/", $username )

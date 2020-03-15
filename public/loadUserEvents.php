@@ -1,7 +1,7 @@
 
 <?php
 
-require "config.php";
+require "../config.php";
 
 function loadEvents( $username, $dbusername, $dbpassword, $dsn ){
     try{

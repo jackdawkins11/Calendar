@@ -9,7 +9,7 @@
  * fullName="some full name"
  */
 
-require "config.php";
+require "../config.php";
 
 function findMatching( $start, $dsn, $dbusername, $dbpassword ){
     if( preg_match( "/[^A-Za-z0-9 ]/", $start ) ){

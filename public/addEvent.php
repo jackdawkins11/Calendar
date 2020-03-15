@@ -6,7 +6,7 @@
  * addedEvent=true/false
  */
 
-require "config.php";
+require "../config.php";
 
 function addEvent( $username, $title, $description, $startTime, $endTime,
     $dsn, $dbusername, $dbpassword ){

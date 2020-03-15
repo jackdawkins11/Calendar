@@ -10,7 +10,7 @@
  * and message="what went wrong"
  */
 
-require "config.php";
+require "../config.php";
 
 function createAccount( $username, $fullName, $password,
     $dsn, $dbusername, $dbpassword){
