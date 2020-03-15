@@ -18,7 +18,7 @@ This is a fully functional calendar website.
 It uses PHP and MySQL for the backend. If you have a PHP and MySQL server set up, you can set it up like this:
 
 * Clone the repository to your server
-* Put valid values into ```$dbusername```, ```$dbpassword``` and ```dbhost``` in config.php
+* Put valid values into ```$dbusername```, ```$dbpassword``` and ```$dbhost``` in config.php
 * Run the command ```php install.php```
 
 After that you should be able to start creating accounts and events.
