@@ -21,3 +21,5 @@ try{
 }catch( PDOException $e ){
     echo "Error installing database: " . $e->getMessage();
 }
+
+?>
