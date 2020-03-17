@@ -536,7 +536,7 @@
                 var h = curDate.getHours();
                 var m = curDate.getMinutes();
                 date4.value = ( h > 12 ? h - 12 : h ) + ":" + (m < 10 ? "0" + m : m )
-                    + ( h <= 12 ? "am" : "pm" );
+                    + ( h < 12 ? "am" : "pm" );
                 date4.style.width="25%";
                 dateHolder.appendChild( date4 );
                 date4.appendChild( typeHolder );
@@ -556,7 +556,7 @@
                 date6.appendChild( typeHolder );
                 h ++;
                 date6.value = ( h > 12 ? h - 12 : h ) + ":" + (m < 10 ? "0" + m : m )
-                    + ( h <= 12 ? "am" : "pm" );
+                    + ( h < 12 ? "am" : "pm" );
                 dateHolder.appendChild( date6 );
                 date6.appendChild( typeHolder );
                 eventInput.appendChild( dateHolder );
@@ -1247,12 +1247,12 @@
                             var dateText2 = document.createElement( "div" );
                             dateText2.classList.add( "event_info_text_2" );
                             var am1 = "", am2 = "";
-                            if( 12 < startHour ){
+                            if( 12 <= startHour ){
                                 am1 = "pm";
                             }else{
                                 am1 = "am";
                             }
-                            if( 12 < endHour ){
+                            if( 12 <= endHour ){
                                 am2 = "pm";
                             }else{
                                 am2 = "am";
@@ -1859,7 +1859,7 @@
                             <div class="schedule_slot_label">9 AM</div>
                             <div class="schedule_slot_label">10 AM</div>
                             <div class="schedule_slot_label">11 AM</div>
-                            <div class="schedule_slot_label">12 AM</div>
+                            <div class="schedule_slot_label">12 PM</div>
                             <div class="schedule_slot_label">1 PM</div>
                             <div class="schedule_slot_label">2 PM</div>
                             <div class="schedule_slot_label">3 PM</div>
