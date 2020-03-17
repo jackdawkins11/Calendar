@@ -3,7 +3,7 @@
 
 ![alt text](https://raw.githubusercontent.com/jackdawkins11/calendar/master/img/screenshot.png)
 
-This is a fully functional calendar website.
+This is a fully functional calendar website, with a user interface based on google calendar.
 
 ### Features
 
