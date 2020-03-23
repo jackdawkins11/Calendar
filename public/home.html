@@ -725,6 +725,12 @@
                     function parseInputs(){
                         var title = document.getElementsByClassName( "event_input_title_input" )[0]
                             .value;
+                        if( title.length > 100 ){
+                          var obj = {};
+                          obj.fail = true;
+                          obj.message = "Title must be less than 100 characters";
+                          return obj;
+                        }
                         var monthStr = document.getElementsByClassName( "event_input_date_holder" )[0]
                             .children[0].value;
                         for(var i = 0; i < 12; i++ ){
@@ -856,6 +862,12 @@
                         }
                         if( obj.description == "" ){
                             obj.description += " ";
+                        }
+                        if( obj.description.length > 100 ){
+                          var obj = {};
+                          obj.fail = true;
+                          obj.message = "Description must be less than 100 characters";
+                          return obj;
                         }
                         return obj;
                     }
@@ -1350,6 +1362,7 @@
         * {
             box-sizing: border-box;
             font-family: sans-serif;
+            word-break: break-all;
         }
         button:focus{
             outline:none;
@@ -1651,8 +1664,9 @@
             cursor:pointer;
         }
         .event_info_title{
-            height:40px;
+            min-height:40px;
             display:flex;
+            word-wrap: break-word;
         }
         .event_info_date{
             height:20px;
